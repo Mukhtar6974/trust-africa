@@ -24,6 +24,7 @@ The platform helps buyers and sellers trade safely by combining:
 - Escrow release or buyer refund decisions
 - Professional V3 trade creation workflow
 - Live escrow fund totals and platform statistics
+- AI Trade Judge with autonomous trust decisions
 
 Trust Africa addresses one of Africa's largest commerce problems:
 
@@ -123,6 +124,12 @@ Tracks total locked, released, and disputed funds as trade validation decisions 
 
 Tracks total, verified, pending, and disputed trades across the live dashboard session.
 
+### AI Trade Judge
+
+Trust Africa uses AI-powered trust adjudication to determine whether a trade should proceed, be rejected, or require manual review.
+
+The `/ai-judge` endpoint evaluates buyer, seller, product, amount, and evidence data, then returns an `APPROVED`, `REVIEW_REQUIRED`, or `REJECTED` decision with confidence, risk, and reasoning.
+
 ---
 
 ## Architecture
@@ -163,6 +170,7 @@ Modules:
 | /escrow-status | Escrow status and evidence validation |
 | /validate-evidence | AI-powered trade evidence validation |
 | /resolve-dispute | Buyer claim and seller evidence dispute resolution |
+| /ai-judge | Autonomous AI trade adjudication |
 
 ---
 

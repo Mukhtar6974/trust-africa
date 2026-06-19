@@ -183,5 +183,34 @@ def validate_evidence():
 
     return jsonify(result)
 
+@app.route("/ai-judge", methods=["POST"])
+def ai_judge():
+    payload = request.get_json(silent=True) or {}
+    evidence = str(payload.get("evidence", "")).lower()
+
+    if any(keyword in evidence for keyword in ("fraud", "fake", "scam")):
+        result = {
+            "decision": "REJECTED",
+            "confidence": "98%",
+            "risk": "HIGH",
+            "reason": "Evidence contains fraud indicators"
+        }
+    elif any(keyword in evidence for keyword in ("receipt", "delivery", "tracking", "invoice", "proof")):
+        result = {
+            "decision": "APPROVED",
+            "confidence": "94%",
+            "risk": "LOW",
+            "reason": "Evidence contains delivery confirmation"
+        }
+    else:
+        result = {
+            "decision": "REVIEW_REQUIRED",
+            "confidence": "70%",
+            "risk": "MEDIUM",
+            "reason": "Evidence requires manual verification"
+        }
+
+    return jsonify(result)
+
 if __name__ == "__main__":
     app.run(debug=True)

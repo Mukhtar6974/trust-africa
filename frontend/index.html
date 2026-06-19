@@ -15,6 +15,10 @@
         textarea { min-height:90px; resize:vertical; }
         label { font-size:14px; font-weight:bold; }
         .badge { display:inline-block; background:#e0f2fe; color:#0369a1; padding:7px 10px; border-radius:8px; margin-top:10px; }
+        .judge-badge { display:inline-block; background:#e2e8f0; color:#334155; padding:7px 10px; border-radius:999px; font-weight:bold; }
+        .judge-badge.approved { background:#dcfce7; color:#166534; }
+        .judge-badge.review-required { background:#fef3c7; color:#92400e; }
+        .judge-badge.rejected { background:#fee2e2; color:#991b1b; }
         .green { color:green; }
         .red { color:#dc2626; }
         @media(max-width:800px){ .grid{ grid-template-columns:1fr; } }
@@ -122,6 +126,13 @@
         </div>
 
         <div class="card">
+            <h2>AI Trade Judge</h2>
+            <p>Decision: <span id="judgeDecision" class="judge-badge">AWAITING TRADE</span></p>
+            <p>Confidence: <span id="judgeConfidence">—</span></p>
+            <p>Reason: <span id="judgeReason">Create a trade to run autonomous adjudication.</span></p>
+        </div>
+
+        <div class="card">
             <h2>Escrow Status</h2>
             <p id="escrowStatus">Loading escrow status...</p>
             <span class="badge">Evidence Validation Active</span>
@@ -182,6 +193,14 @@ function updateWorkflowMetrics(amount, validation) {
 
     renderEscrowDashboard();
     renderPlatformStatistics();
+}
+
+function updateTradeJudge(judgment) {
+    const badge = document.getElementById("judgeDecision");
+    badge.className = "judge-badge " + judgment.decision.toLowerCase().replace("_", "-");
+    badge.innerText = judgment.decision;
+    document.getElementById("judgeConfidence").innerText = judgment.confidence;
+    document.getElementById("judgeReason").innerText = judgment.reason;
 }
 
 function addTradeToHistory(id, buyer, seller, product, amount, status) {
@@ -263,15 +282,21 @@ function submitTrade(event) {
     const submitButton = form.querySelector("button[type='submit']");
 
     submitButton.disabled = true;
-    document.getElementById("newTrade").innerText = "Validating trade evidence...";
+    document.getElementById("newTrade").innerText = "Running AI Trade Judge...";
 
-    fetch("http://127.0.0.1:5000/validate-evidence", {
+    fetch("http://127.0.0.1:5000/ai-judge", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ evidence: trade.evidence })
+        body: JSON.stringify({
+            buyer: trade.buyer,
+            seller: trade.seller,
+            product: trade.product,
+            amount: trade.amount,
+            evidence: trade.evidence
+        })
     })
     .then(res => {
-        if (!res.ok) throw new Error("Evidence validation failed");
+        if (!res.ok) throw new Error("AI trade adjudication failed");
         return res.json();
     })
     .then(data => {
@@ -284,24 +309,24 @@ function submitTrade(event) {
             data.decision
         );
 
-        updateRiskDashboard(data.risk_level);
+        updateRiskDashboard(data.risk);
         updateWorkflowMetrics(trade.amount, data);
+        updateTradeJudge(data);
 
         document.getElementById("newTrade").innerText =
             "Created " + tradeId + " | Decision: " + data.decision;
 
         document.getElementById("trustCertificate").innerText =
             "Certificate: " + tradeId +
-            " | Status: " + data.certificate_status +
-            " | Score: " + data.trust_score +
+            " | Status: " + (data.decision === "APPROVED" ? "VERIFIED" : data.decision) +
+            " | Judge Confidence: " + data.confidence +
             " | Issuer: Trust Africa AI";
 
         document.getElementById("trustAnalysis").innerText =
             "Trade: " + tradeId +
             " | Decision: " + data.decision +
-            " | Risk: " + data.risk_level +
-            " | Trust Score: " + data.trust_score +
-            " | Certificate: " + data.certificate_status +
+            " | Risk: " + data.risk +
+            " | Confidence: " + data.confidence +
             " | Reason: " + data.reason;
 
         form.reset();
