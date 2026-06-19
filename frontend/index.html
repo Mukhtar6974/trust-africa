@@ -84,6 +84,16 @@
         <div class="card">
             <h2>Dispute Center</h2>
             <p id="dispute">Loading...</p>
+            <form id="disputeForm" onsubmit="submitDispute(event)">
+                <label for="buyerClaim">Buyer claim</label>
+                <textarea id="buyerClaim" name="buyer_claim" required></textarea>
+
+                <label for="sellerResponse">Seller response</label>
+                <textarea id="sellerResponse" name="seller_response" required></textarea>
+
+                <button type="submit">Submit Dispute</button>
+            </form>
+            <p id="disputeResult" aria-live="polite"></p>
             <span class="badge">Resolution Engine Online</span>
         </div>
 
@@ -241,6 +251,52 @@ function submitTrade(event) {
     })
     .catch(error => {
         document.getElementById("newTrade").innerText = error.message;
+    })
+    .finally(() => {
+        submitButton.disabled = false;
+    });
+}
+
+function submitDispute(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const dispute = Object.fromEntries(formData.entries());
+    const submitButton = form.querySelector("button[type='submit']");
+    const resultElement = document.getElementById("disputeResult");
+
+    submitButton.disabled = true;
+    resultElement.innerText = "Analyzing claims and seller evidence...";
+
+    fetch("http://127.0.0.1:5000/resolve-dispute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            buyer_claim: dispute.buyer_claim,
+            seller_response: dispute.seller_response
+        })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Dispute resolution failed");
+        return res.json();
+    })
+    .then(data => {
+        resultElement.innerText =
+            "Decision: " + data.decision +
+            " | Risk: " + data.risk_level +
+            " | Confidence: " + data.confidence +
+            " | Reason: " + data.reason;
+
+        document.getElementById("escrowStatus").innerText =
+            "AI Dispute Decision: " + data.decision +
+            " | Risk: " + data.risk_level +
+            " | Reason: " + data.reason;
+
+        form.reset();
+    })
+    .catch(error => {
+        resultElement.innerText = error.message;
     })
     .finally(() => {
         submitButton.disabled = false;

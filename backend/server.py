@@ -46,6 +46,39 @@ def dispute():
         "confidence": "96%"
     })
 
+@app.route("/resolve-dispute", methods=["POST"])
+def resolve_dispute():
+    payload = request.get_json(silent=True) or {}
+    buyer_claim = str(payload.get("buyer_claim", "")).lower()
+    seller_response = str(payload.get("seller_response", "")).lower()
+    seller_has_evidence = any(
+        keyword in seller_response for keyword in ("proof", "receipt", "delivered")
+    )
+
+    if "not delivered" in buyer_claim and not seller_has_evidence:
+        result = {
+            "decision": "REFUND_BUYER",
+            "risk_level": "HIGH",
+            "confidence": "94%",
+            "reason": "Seller did not provide valid delivery proof"
+        }
+    elif seller_has_evidence:
+        result = {
+            "decision": "RELEASE_FUNDS",
+            "risk_level": "LOW",
+            "confidence": "96%",
+            "reason": "Seller provided valid delivery proof"
+        }
+    else:
+        result = {
+            "decision": "MANUAL_REVIEW",
+            "risk_level": "MEDIUM",
+            "confidence": "70%",
+            "reason": "Available claims and evidence are inconclusive"
+        }
+
+    return jsonify(result)
+
 @app.route("/contract-trust")
 def contract_trust():
     return jsonify({

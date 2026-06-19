@@ -20,6 +20,8 @@ The platform helps buyers and sellers trade safely by combining:
 - Trade submission form
 - AI-powered trade validation
 - GenLayer-ready evidence workflow
+- AI dispute resolution using buyer claims and seller evidence
+- Escrow release or buyer refund decisions
 
 Trust Africa addresses one of Africa's largest commerce problems:
 
@@ -101,6 +103,12 @@ Submits evidence to the backend for keyword-based risk classification, trust sco
 
 Models the evidence-to-decision flow needed for future GenLayer intelligent contract validation.
 
+### AI Dispute Resolution
+
+Compares the buyer claim with the seller response and evidence to recommend an escrow decision.
+
+Seller proof, receipts, or delivery confirmation can trigger `RELEASE_FUNDS`; unsupported non-delivery claims can trigger `REFUND_BUYER`; inconclusive disputes are sent to `MANUAL_REVIEW`.
+
 ---
 
 ## Architecture
@@ -140,6 +148,7 @@ Modules:
 | /trade/create | Dynamic trade creation |
 | /escrow-status | Escrow status and evidence validation |
 | /validate-evidence | AI-powered trade evidence validation |
+| /resolve-dispute | Buyer claim and seller evidence dispute resolution |
 
 ---
 
