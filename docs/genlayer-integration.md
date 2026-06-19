@@ -1,59 +1,111 @@
-# Trust Africa GenLayer Integration Plan
+# GenLayer Integration
 
-## Purpose
+## Overview
 
-Trust Africa will use GenLayer Intelligent Contracts to help decide whether a protected trade agreement was fulfilled.
+Trust Africa uses GenLayer Intelligent Contracts to establish trust between buyers and sellers in African commerce.
 
-## Current Status
+Traditional smart contracts only verify predefined rules. Trust Africa leverages GenLayer's AI-powered execution model to evaluate evidence, analyze trade disputes, calculate trust scores, and issue trust certificates.
 
-Trust Africa currently has an off-chain Python prototype.
+---
 
-It includes:
+## Problem
 
-- Protected Trade Contract
-- AI Decision Engine
-- Backend API simulation
-- Escrow simulation
-- Trade flow simulation
+Cross-border commerce in Africa suffers from:
 
-## Future GenLayer Role
+- Fraudulent transactions
+- Lack of trusted reputation systems
+- Difficult dispute resolution
+- Limited escrow infrastructure
+- Lack of verifiable business trust
 
-GenLayer will handle:
+---
 
-- Agreement state
-- Evidence review
-- AI-assisted reasoning
-- Validator consensus
-- Final trade decision
+## Solution
 
-## Why GenLayer Fits
+Trust Africa introduces an intelligent trust layer powered by GenLayer.
 
-Trust Africa needs decisions that normal smart contracts cannot easily make, such as:
+The platform provides:
 
-- Was the agreement fulfilled?
-- Is the evidence reliable?
-- Should funds be released?
-- Should human or validator review happen?
+- AI-powered trade validation
+- Reputation scoring
+- Trust certificates
+- Escrow protection
+- Dispute resolution
+- Risk assessment
 
-## First GenLayer Contract Goal
+---
 
-Create an Intelligent Contract called:
+## Intelligent Contract Features
 
-ProtectedTradeAgreement
+### Trust Scoring
 
-It should store:
+The contract evaluates:
 
-- buyer
-- seller
-- product
-- amount
-- delivery_date
-- evidence
-- status
-- decision
+- Trade history
+- Seller reputation
+- Buyer reputation
+- Dispute records
 
-## Core Principle
+Outputs:
 
-AI must never pretend certainty.
+- Trust Score
+- Risk Level
+- Trust Certificate Status
 
-If evidence is unclear, the contract should request human or validator review.
+### Dispute Resolution
+
+The contract reviews:
+
+- Buyer claims
+- Seller responses
+- Delivery evidence
+- Trade proof
+
+Possible outcomes:
+
+- Release funds to seller
+- Refund buyer
+- Manual review required
+
+### Trust Certificate
+
+The contract can issue:
+
+- VERIFIED
+- PENDING
+- REJECTED
+
+trust certificates based on transaction behavior.
+
+---
+
+## Architecture
+
+Buyer
+↓
+Trust Africa Platform
+↓
+GenLayer Intelligent Contract
+↓
+AI Validation
+↓
+Trust Certificate
+↓
+Escrow Decision
+
+---
+
+## Future Roadmap
+
+- On-chain trust passports
+- Business verification system
+- Cross-border trust network
+- Decentralized arbitration
+- Multi-country trust registry
+- AI-powered commercial mediation
+
+---
+
+## Conclusion
+
+Trust Africa demonstrates how GenLayer Intelligent Contracts can become the trust infrastructure layer for African commerce by combining AI reasoning with decentralized execution.
