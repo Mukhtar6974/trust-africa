@@ -3,181 +3,215 @@
 <head>
     <title>Trust Africa</title>
     <style>
-        :root { --navy:#0b1739; --blue:#2563eb; --cyan:#06b6d4; --surface:#ffffff; --muted:#64748b; --border:#dbe5f1; }
+        :root { --ink:#0b1630; --navy:#0a1f44; --blue:#165dff; --teal:#0f9f8f; --green:#14804a; --amber:#b76e00; --red:#c8323f; --muted:#66758f; --line:#dce4ef; --soft:#f4f7fb; --white:#fff; }
         * { box-sizing:border-box; }
-        body { font-family:Inter,Segoe UI,Arial,sans-serif; background:linear-gradient(180deg,#edf5ff 0,#f8fafc 420px); margin:0; color:#172033; line-height:1.55; }
-        header { background:linear-gradient(135deg,var(--navy),#163b76 65%,#0e7490); color:white; padding:54px 24px 70px; text-align:center; }
-        header h1 { margin:0 0 10px; font-size:clamp(2.2rem,5vw,3.6rem); letter-spacing:-0.04em; }
-        header p { margin:0; color:#cfe8ff; font-size:1.1rem; }
-        .container { width:min(94%,1280px); margin:-28px auto 48px; }
-        .status { background:#dcfce7; color:#166534; padding:14px 18px; border:1px solid #bbf7d0; border-radius:14px; font-weight:700; margin-bottom:24px; box-shadow:0 8px 24px rgba(15,23,42,0.08); }
-        .hero-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:28px; }
-        .hero-stat { background:rgba(255,255,255,0.96); border:1px solid var(--border); border-radius:18px; padding:24px; box-shadow:0 12px 32px rgba(15,23,42,0.08); }
-        .hero-stat span { display:block; color:var(--muted); font-size:0.82rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; }
-        .hero-stat strong { display:block; color:var(--navy); font-size:clamp(1.6rem,3vw,2.25rem); margin-top:8px; }
-        .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; }
-        .card { background:var(--surface); padding:30px; border:1px solid var(--border); border-radius:20px; min-height:180px; box-shadow:0 14px 36px rgba(15,23,42,0.08); }
-        .card h2 { color:var(--navy); margin:0 0 16px; font-size:1.35rem; }
-        button { background:linear-gradient(135deg,var(--blue),#0ea5e9); color:white; border:0; padding:13px 20px; border-radius:10px; font-weight:800; cursor:pointer; box-shadow:0 8px 18px rgba(37,99,235,0.22); transition:transform .2s,box-shadow .2s; }
-        button:hover { transform:translateY(-1px); box-shadow:0 12px 24px rgba(37,99,235,0.28); }
-        button:disabled { cursor:wait; opacity:.65; transform:none; }
-        form { display:grid; gap:12px; margin-top:18px; }
-        input, textarea { width:100%; border:1px solid #cbd5e1; border-radius:10px; padding:12px 13px; font:inherit; background:#f8fafc; }
-        input:focus, textarea:focus { outline:3px solid #bfdbfe; border-color:var(--blue); background:white; }
-        textarea { min-height:100px; resize:vertical; }
-        label { font-size:14px; font-weight:800; color:#334155; }
-        .badge { display:inline-block; background:#e0f2fe; color:#0369a1; padding:7px 11px; border-radius:999px; margin-top:10px; font-weight:700; }
-        .judge-badge,.decision-pill { display:inline-block; background:#e2e8f0; color:#334155; padding:7px 10px; border-radius:999px; font-size:.82rem; font-weight:800; }
-        .judge-badge.approved,.decision-pill.approved { background:#dcfce7; color:#166534; }
-        .judge-badge.review-required,.decision-pill.review-required { background:#fef3c7; color:#92400e; }
-        .judge-badge.rejected,.decision-pill.rejected { background:#fee2e2; color:#991b1b; }
-        .route-list,.decision-list { display:grid; gap:12px; list-style:none; padding:0; margin:0; }
-        .route-list li,.decision-list li { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; }
-        .route-list strong { color:#1d4ed8; }
-        .decision-list time { color:var(--muted); font-size:.85rem; }
-        .green { color:#15803d; }
-        .red { color:#dc2626; }
-        footer { background:var(--navy); color:#cfe8ff; text-align:center; padding:28px 20px; font-weight:700; }
-        @media(max-width:900px){ .hero-stats{grid-template-columns:repeat(2,1fr)} .grid{grid-template-columns:1fr} }
-        @media(max-width:560px){ header{padding:40px 18px 58px} .container{width:min(92%,1280px)} .hero-stats{grid-template-columns:1fr;gap:12px} .card{padding:22px;border-radius:16px} .route-list li,.decision-list li{align-items:flex-start;flex-direction:column} }
+        html { scroll-behavior:smooth; }
+        body { margin:0; background:#f4f7fb; color:var(--ink); font-family:Inter,"Segoe UI",Arial,sans-serif; line-height:1.55; }
+        .hero { position:relative; overflow:hidden; color:white; background:radial-gradient(circle at 82% 8%,rgba(31,201,183,.35),transparent 28%),linear-gradient(125deg,#07152f 0%,#0c2d5d 64%,#075e62 130%); }
+        .hero::after { content:""; position:absolute; inset:auto -12% -190px 30%; height:330px; border:1px solid rgba(255,255,255,.12); border-radius:50%; transform:rotate(-8deg); }
+        .topbar,.hero-content,.container { width:min(92%,1220px); margin-inline:auto; }
+        .topbar { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; padding:24px 0; }
+        .brand { display:flex; align-items:center; gap:11px; font-size:1.05rem; font-weight:850; letter-spacing:-.02em; }
+        .brand-mark { display:grid; place-items:center; width:36px; height:36px; border-radius:11px; background:linear-gradient(135deg,#31d6bd,#4c8dff); box-shadow:0 8px 24px rgba(32,205,186,.24); }
+        .nav-links { display:flex; align-items:center; gap:4px; padding:5px; border:1px solid rgba(255,255,255,.12); border-radius:12px; background:rgba(255,255,255,.06); }
+        .nav-links a { padding:8px 10px; border-radius:8px; color:#d8e5f4; text-decoration:none; font-size:.82rem; font-weight:750; }
+        .nav-links a:hover,.nav-links a:focus-visible { color:white; background:rgba(255,255,255,.11); outline:none; }
+        .status { display:flex; align-items:center; gap:8px; color:#d9fbf4; font-size:.85rem; font-weight:750; }
+        .status::before { content:""; width:8px; height:8px; border-radius:50%; background:#39df9a; box-shadow:0 0 0 5px rgba(57,223,154,.13); }
+        .hero-content { position:relative; z-index:1; padding:70px 0 96px; max-width:1220px; }
+        .eyebrow { display:inline-flex; padding:7px 11px; border:1px solid rgba(255,255,255,.18); border-radius:999px; color:#bdeee8; background:rgba(255,255,255,.06); font-size:.77rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+        .hero h1 { max-width:720px; margin:20px 0 14px; font-size:clamp(3rem,7vw,5.5rem); line-height:.98; letter-spacing:-.065em; }
+        .hero-subtitle { max-width:650px; margin:0; color:#c6d6ea; font-size:clamp(1.05rem,2vw,1.3rem); }
+        .hero-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; }
+        .button { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 20px; border-radius:12px; text-decoration:none; font-weight:800; transition:transform .18s,box-shadow .18s,background .18s; }
+        .button:hover { transform:translateY(-2px); }
+        .button-primary { color:white; background:linear-gradient(135deg,#2563eb,#087f8c); box-shadow:0 14px 30px rgba(12,99,190,.34); }
+        .button-secondary { color:white; border:1px solid rgba(255,255,255,.28); background:rgba(255,255,255,.08); }
+        .container { margin-top:-42px; padding-bottom:64px; position:relative; z-index:2; }
+        .kpi-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin-bottom:30px; }
+        .kpi { padding:22px; border:1px solid rgba(220,228,239,.9); border-radius:18px; background:rgba(255,255,255,.97); box-shadow:0 16px 45px rgba(13,35,70,.1); }
+        .kpi-label { display:block; color:var(--muted); font-size:.74rem; font-weight:850; letter-spacing:.07em; text-transform:uppercase; }
+        .kpi strong { display:block; margin-top:7px; font-size:clamp(1.55rem,2.8vw,2.15rem); letter-spacing:-.04em; color:var(--navy); }
+        .section { margin-top:28px; }
+        .secondary-section { margin-top:54px; padding-top:10px; }
+        .section-heading { display:flex; align-items:end; justify-content:space-between; gap:18px; margin-bottom:16px; }
+        .section-heading h2,.card h2 { margin:0; color:var(--navy); letter-spacing:-.025em; }
+        .section-heading p { margin:4px 0 0; color:var(--muted); }
+        .grid { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:20px; }
+        .card { grid-column:span 6; padding:28px; border:1px solid var(--line); border-radius:20px; background:var(--white); box-shadow:0 10px 34px rgba(16,36,70,.07); }
+        .card-wide { grid-column:span 12; }
+        .card h2 { font-size:1.24rem; }
+        .card-kicker { margin:5px 0 22px; color:var(--muted); font-size:.9rem; }
+        .panel-header { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:22px; }
+        .panel-header .card-kicker { margin:3px 0 0; }
+        .signal { display:inline-flex; align-items:center; gap:7px; padding:7px 10px; border-radius:999px; background:#eafaf5; color:#137453; font-size:.75rem; font-weight:850; white-space:nowrap; }
+        .signal::before { content:""; width:7px; height:7px; border-radius:50%; background:#24b47e; }
+        form { display:grid; gap:14px; }
+        .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+        .field { display:grid; gap:7px; }
+        .field-full { grid-column:1/-1; }
+        label { color:#263752; font-size:.86rem; font-weight:850; }
+        input,textarea { width:100%; padding:13px 14px; border:1px solid #cfd9e7; border-radius:11px; background:#fbfcfe; color:var(--ink); font:inherit; transition:border-color .18s,box-shadow .18s; }
+        input:focus,textarea:focus { outline:0; border-color:#4b80ff; box-shadow:0 0 0 4px rgba(22,93,255,.1); background:white; }
+        textarea { min-height:104px; resize:vertical; }
+        button { min-height:48px; border:0; border-radius:11px; background:linear-gradient(135deg,#165dff,#087f8c); color:white; padding:0 20px; font:inherit; font-weight:850; cursor:pointer; box-shadow:0 10px 24px rgba(22,93,255,.2); }
+        button:disabled { opacity:.65; cursor:wait; }
+        .result-message { min-height:24px; margin:12px 0 0; color:#385070; font-size:.9rem; font-weight:700; }
+        .metric-stack { display:grid; gap:12px; }
+        .metric-row { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:15px 16px; border:1px solid #e2e8f0; border-radius:13px; background:#f8fafc; }
+        .metric-row span:first-child { color:var(--muted); font-size:.85rem; }
+        .metric-row strong,.metric-row span:last-child { text-align:right; color:var(--navy); font-weight:850; }
+        .judge-badge,.decision-pill,.event-status { display:inline-flex; padding:7px 10px; border-radius:999px; background:#e7edf5; color:#40516b; font-size:.75rem; font-weight:900; }
+        .judge-badge.approved,.decision-pill.approved,.event-status.approved { background:#dcf7e9; color:#126a41; }
+        .judge-badge.review-required,.decision-pill.review-required { background:#fff0c9; color:#895700; }
+        .judge-badge.rejected,.decision-pill.rejected,.event-status.rejected { background:#ffe1e4; color:#a32230; }
+        .event-status.review-required { background:#fff0c9; color:#895700; }
+        .detail-note { margin:16px 0 0; padding:13px 14px; border-left:3px solid #8fb0ff; border-radius:0 9px 9px 0; background:#f3f6fc; color:#52627b; font-size:.88rem; }
+        .route-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:20px; }
+        .route { padding:16px; border:1px solid #dce5f0; border-radius:14px; background:#f7f9fc; }
+        .route strong { display:block; margin-bottom:5px; color:var(--navy); }
+        .route span { color:var(--muted); font-size:.82rem; }
+        .event-list,.decision-list { display:grid; gap:10px; list-style:none; padding:0; margin:0; }
+        .event-list li,.decision-list li { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 15px; border:1px solid #e2e8f0; border-radius:12px; background:#fbfcfe; }
+        .event-copy { display:grid; gap:2px; }
+        .event-copy strong { color:#21324e; }
+        .event-copy span,.decision-list time { color:var(--muted); font-size:.82rem; }
+        .timeline-grid { display:grid; grid-template-columns:1.15fr .85fr; gap:24px; }
+        .timeline-grid h3 { margin:0 0 12px; font-size:.92rem; color:#3c4f6d; }
+        .operations-copy { display:grid; gap:10px; margin-top:16px; color:#52627b; font-size:.88rem; }
+        .operations-copy p { margin:0; padding:11px 13px; border-radius:10px; background:#f6f8fb; }
+        .green { color:var(--green); }
+        .red { color:var(--red); }
+        .sr-only { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
+        footer { padding:30px 20px; color:#9fb2cc; background:#07152f; text-align:center; font-size:.9rem; }
+        @media(max-width:1080px){ .topbar{flex-wrap:wrap}.nav-links{order:3;width:100%;margin-top:12px;overflow-x:auto;justify-content:flex-start}.nav-links a{white-space:nowrap} }
+        @media(max-width:980px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} .card{grid-column:span 12} .route-grid{grid-template-columns:repeat(2,1fr)} }
+        @media(max-width:680px){ .topbar{padding:18px 0}.hero-content{padding:52px 0 80px}.hero-actions{display:grid}.button{width:100%}.kpi-grid{grid-template-columns:1fr 1fr;gap:10px}.kpi{padding:17px}.form-grid,.timeline-grid{grid-template-columns:1fr}.route-grid{grid-template-columns:1fr}.card,.trust-network{padding:21px;border-radius:16px}.panel-header,.section-heading{align-items:flex-start;flex-direction:column}.metric-row{align-items:flex-start;flex-direction:column}.metric-row strong,.metric-row span:last-child{text-align:left}.event-list li,.decision-list li{align-items:flex-start;flex-direction:column} }
+        @media(max-width:430px){ .kpi-grid{grid-template-columns:1fr}.hero h1{font-size:3rem} }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>Trust Africa Platform</h1>
-    <p>Digital trust infrastructure for African commerce</p>
-</header>
-
-<div class="container">
-    <div class="status" id="status">Loading backend...</div>
-
-    <section class="hero-stats" aria-label="Commerce overview">
-        <div class="hero-stat"><span>Total Trade Volume</span><strong id="heroTradeVolume">0.00</strong></div>
-        <div class="hero-stat"><span>Verified Trades</span><strong id="heroVerifiedTrades">0</strong></div>
-        <div class="hero-stat"><span>Protected Funds</span><strong id="heroProtectedFunds">0.00</strong></div>
-        <div class="hero-stat"><span>Trust Score</span><strong id="heroTrustScore">92%</strong></div>
-    </section>
-
-    <div class="grid">
-        <div class="card">
-            <h2>Marketplace</h2>
-            <p id="marketplace">Loading...</p>
+<header class="hero" id="overview">
+    <nav class="topbar" aria-label="Product navigation">
+        <div class="brand"><span class="brand-mark">TA</span>Trust Africa</div>
+        <div class="nav-links">
+            <a href="#overview">Overview</a>
+            <a href="#create-trade">Create Trade</a>
+            <a href="#trust-decision">Trust Decision</a>
+            <a href="#escrow">Escrow</a>
+            <a href="#disputes">Disputes</a>
+            <a href="#activity">Activity</a>
         </div>
-
-        <div class="card">
-            <h2>Cross-Border Trade Activity</h2>
-            <ul class="route-list">
-                <li><strong>Nigeria &rarr; Ghana</strong><span>Textiles &amp; manufactured goods</span></li>
-                <li><strong>Kenya &rarr; Uganda</strong><span>Agricultural products</span></li>
-                <li><strong>South Africa &rarr; Botswana</strong><span>Industrial supplies</span></li>
-            </ul>
-        </div>
-
-        <div class="card">
-            <h2>Recent AI Decisions</h2>
-            <ul id="recentDecisions" class="decision-list"></ul>
-        </div>
-
-        <div class="card">
-            <h2>Create Trade</h2>
-            <p id="trade">Loading...</p>
-            <form id="tradeForm" onsubmit="submitTrade(event)">
-                <label for="buyerName">Buyer Name</label>
-                <input id="buyerName" name="buyer" type="text" required>
-
-                <label for="sellerName">Seller Name</label>
-                <input id="sellerName" name="seller" type="text" required>
-
-                <label for="productName">Product</label>
-                <input id="productName" name="product" type="text" required>
-
-                <label for="tradeAmount">Amount</label>
-                <input id="tradeAmount" name="amount" type="number" min="0.01" step="0.01" required>
-
-                <label for="tradeEvidence">Evidence</label>
-                <textarea id="tradeEvidence" name="evidence" required></textarea>
-
-                <button type="submit">Create Trade</button>
-            </form>
-            <p id="newTrade" aria-live="polite"></p>
-        </div>
-
-        <div class="card">
-            <h2>AI Fraud Detection</h2>
-            <p id="fraudCheck">Loading fraud analysis...</p>
-        </div>
-
-        <div class="card">
-            <h2>Risk Dashboard</h2>
-            <p id="riskDashboard">Loading risk metrics...</p>
-        </div>
-
-        <div class="card">
-            <h2>Escrow Dashboard</h2>
-            <p id="escrowDashboard">Loading escrow totals...</p>
-            <span class="badge">Live Fund Tracking</span>
-        </div>
-
-        <div class="card">
-            <h2>Platform Statistics</h2>
-            <p id="platformStatistics">Loading trade statistics...</p>
-            <span class="badge">V3 Workflow Active</span>
-        </div>
-
-        <div class="card">
-            <h2>Trade History</h2>
-            <ul id="tradeHistory"></ul>
-        </div>
-
-        <div class="card">
-            <h2>Reputation</h2>
-            <p id="reputation">Loading...</p>
-            <span class="badge">Trust Score Active</span>
-        </div>
-
-        <div class="card">
-            <h2>Dispute Center</h2>
-            <p id="dispute">Loading...</p>
-            <form id="disputeForm" onsubmit="submitDispute(event)">
-                <label for="buyerClaim">Buyer claim</label>
-                <textarea id="buyerClaim" name="buyer_claim" required></textarea>
-
-                <label for="sellerResponse">Seller response</label>
-                <textarea id="sellerResponse" name="seller_response" required></textarea>
-
-                <button type="submit">Submit Dispute</button>
-            </form>
-            <p id="disputeResult" aria-live="polite"></p>
-            <span class="badge">Resolution Engine Online</span>
-        </div>
-
-        <div class="card">
-            <h2>Trust Certificate</h2>
-            <p id="trustCertificate">Loading certificate...</p>
-        </div>
-
-        <div class="card">
-            <h2>AI Trust Analysis</h2>
-            <p id="trustAnalysis">Loading...</p>
-            <p>Funds are protected until trust conditions are met.</p>
-            <span class="badge">Escrow Protection Enabled</span>
-        </div>
-
-        <div class="card">
-            <h2>AI Trade Judge</h2>
-            <p>Decision: <span id="judgeDecision" class="judge-badge">AWAITING TRADE</span></p>
-            <p>Confidence: <span id="judgeConfidence">—</span></p>
-            <p>Reason: <span id="judgeReason">Create a trade to run autonomous adjudication.</span></p>
-        </div>
-
-        <div class="card">
-            <h2>Escrow Status</h2>
-            <p id="escrowStatus">Loading escrow status...</p>
-            <span class="badge">Evidence Validation Active</span>
+        <div class="status" id="status">Connecting</div>
+    </nav>
+    <div class="hero-content">
+        <span class="eyebrow">Cross-border commerce intelligence</span>
+        <h1>Trust Africa</h1>
+        <p class="hero-subtitle">AI-powered trust infrastructure for African commerce</p>
+        <div class="hero-actions">
+            <a class="button button-primary" href="#create-trade">Start Trade</a>
+            <a class="button button-secondary" href="#trust-network">View Trust Network</a>
         </div>
     </div>
-</div>
+</header>
+
+<main class="container">
+    <section class="kpi-grid" aria-label="Trust network performance">
+        <div class="kpi"><span class="kpi-label">Verified Trade Volume</span><strong id="heroTradeVolume">0.00</strong></div>
+        <div class="kpi"><span class="kpi-label">Protected Escrow Value</span><strong id="heroProtectedFunds">0.00</strong></div>
+        <div class="kpi"><span class="kpi-label">Verified Businesses</span><strong id="heroVerifiedTrades">0</strong></div>
+        <div class="kpi"><span class="kpi-label">AI Decisions Processed</span><strong id="aiDecisionsProcessed">3</strong></div>
+    </section>
+
+    <section class="section" aria-labelledby="protected-workflow-title">
+        <div class="section-heading"><div><h2 id="protected-workflow-title">Protected Trade Workspace</h2><p>Four tools for creating and protecting trusted commerce.</p></div></div>
+        <div class="grid primary-grid">
+            <article class="card" id="create-trade">
+                <div class="panel-header"><div><h2>Create Protected Trade</h2><p class="card-kicker">Submit a trade and supporting proof.</p></div><span class="signal">AI ready</span></div>
+                <form id="tradeForm" onsubmit="submitTrade(event)">
+                    <div class="form-grid">
+                        <div class="field"><label for="buyerName">Buyer Business</label><input id="buyerName" name="buyer" type="text" placeholder="Accra Retail Partners" required></div>
+                        <div class="field"><label for="sellerName">Seller Business</label><input id="sellerName" name="seller" type="text" placeholder="Lagos Textile Export Ltd" required></div>
+                        <div class="field"><label for="productName">Product / Service</label><input id="productName" name="product" type="text" placeholder="Premium textile consignment" required></div>
+                        <div class="field"><label for="tradeAmount">Trade Value</label><input id="tradeAmount" name="amount" type="number" min="0.01" step="0.01" placeholder="25000" required></div>
+                        <div class="field field-full"><label for="tradeEvidence">Evidence / Proof</label><textarea id="tradeEvidence" name="evidence" placeholder="Invoice, receipt, tracking, or delivery confirmation" required></textarea></div>
+                    </div>
+                    <button type="submit">Create Protected Trade</button>
+                </form>
+                <p class="result-message" id="newTrade" aria-live="polite"></p>
+            </article>
+
+            <article class="card" id="trust-decision">
+                <div class="panel-header"><div><h2>AI Trust Decision</h2><p class="card-kicker">Clear, explainable trade adjudication.</p></div><span id="judgeDecision" class="judge-badge">AWAITING TRADE</span></div>
+                <div class="metric-stack">
+                    <div class="metric-row"><span>Risk Level</span><strong id="judgeRisk">—</strong></div>
+                    <div class="metric-row"><span>Confidence</span><strong id="judgeConfidence">—</strong></div>
+                    <div class="metric-row"><span>Reason</span><strong id="judgeReason">Submit a trade for analysis</strong></div>
+                </div>
+                <p class="detail-note" id="trustAnalysis">No active decision.</p>
+            </article>
+
+            <article class="card" id="escrow">
+                <div class="panel-header"><div><h2>Escrow Protection</h2><p class="card-kicker">AI-gated fund release.</p></div><span class="signal">Protected</span></div>
+                <div class="metric-stack">
+                    <div class="metric-row"><span>Funds Status</span><strong id="escrowFundsStatus">Loading</strong></div>
+                    <div class="metric-row"><span>Release Condition</span><strong id="escrowReleaseCondition">Loading</strong></div>
+                    <div class="metric-row"><span>AI Escrow Decision</span><strong id="escrowDecision">Loading</strong></div>
+                </div>
+                <p class="detail-note" id="escrowStatus">Loading escrow status...</p>
+            </article>
+
+            <article class="card">
+                <div class="panel-header"><div><h2>Business Trust Passport</h2><p class="card-kicker">Verified counterparty reputation.</p></div><span class="signal">Verified</span></div>
+                <div class="metric-stack" id="reputation"><div class="metric-row"><span>Buyer Trust Score</span><strong>Loading</strong></div><div class="metric-row"><span>Seller Trust Score</span><strong>Loading</strong></div></div>
+                <div class="metric-row" style="margin-top:12px"><span>Certificate Status</span><strong id="trustCertificate">Loading</strong></div>
+            </article>
+        </div>
+    </section>
+
+    <section class="section secondary-section" id="activity">
+        <div class="section-heading"><div><h2>Network Activity</h2><p>Supporting intelligence and operational tools.</p></div></div>
+        <div class="grid">
+            <article class="card card-wide" id="trust-network">
+                <div class="panel-header"><div><h2>Cross-Border Trade Activity</h2><p class="card-kicker" id="marketplace">Loading trusted activity...</p></div><span class="signal">Network live</span></div>
+                <p class="sr-only" id="trade">Loading protected trade flow...</p>
+                <div class="route-grid">
+                    <div class="route"><strong>Nigeria &rarr; Ghana</strong><span>Textiles and retail goods</span></div>
+                    <div class="route"><strong>Kenya &rarr; Uganda</strong><span>Agricultural supply</span></div>
+                    <div class="route"><strong>Rwanda &rarr; Tanzania</strong><span>Logistics services</span></div>
+                    <div class="route"><strong>South Africa &rarr; Botswana</strong><span>Industrial equipment</span></div>
+                </div>
+            </article>
+
+            <article class="card" id="disputes">
+                <div class="panel-header"><div><h2>AI Dispute Resolution</h2><p class="card-kicker">Resolve claims against seller evidence.</p></div><span class="signal">Online</span></div>
+                <p class="detail-note" id="dispute">Loading resolution policy...</p>
+                <form id="disputeForm" onsubmit="submitDispute(event)">
+                    <div class="field"><label for="buyerClaim">Buyer Claim</label><textarea id="buyerClaim" name="buyer_claim" required></textarea></div>
+                    <div class="field"><label for="sellerResponse">Seller Response</label><textarea id="sellerResponse" name="seller_response" required></textarea></div>
+                    <button type="submit">Submit Dispute</button>
+                </form>
+                <p class="result-message" id="disputeResult" aria-live="polite"></p>
+            </article>
+
+            <article class="card">
+                <div class="panel-header"><div><h2>Recent Trust Events</h2><p class="card-kicker">Latest verified activity.</p></div><span class="signal">Live</span></div>
+                <div class="timeline-grid"><div><h3>Trust activity</h3><ul id="tradeHistory" class="event-list"></ul></div><div><h3>AI decisions</h3><ul id="recentDecisions" class="decision-list"></ul></div></div>
+            </article>
+
+            <article class="card card-wide">
+                <div class="panel-header"><div><h2>Platform Statistics</h2><p class="card-kicker">Concise operational summaries.</p></div><span>Trust Score <strong id="heroTrustScore">92%</strong></span></div>
+                <div class="operations-copy">
+                    <p><strong>AI Risk Intelligence:</strong> <span id="fraudCheck">Loading...</span></p>
+                    <p><strong>Trust Operations:</strong> <span id="riskDashboard">Loading...</span></p>
+                    <p id="escrowDashboard">Loading escrow totals...</p>
+                    <p id="platformStatistics">Loading statistics...</p>
+                </div>
+            </article>
+        </div>
+    </section>
+</main>
 
 <footer>Trust Africa &mdash; AI-powered trust infrastructure for African commerce.</footer>
 
@@ -195,6 +229,7 @@ let tradeStatistics = {
     disputed: 0
 };
 let currentTrustScore = 92;
+let aiDecisionsProcessed = 3;
 let recentDecisions = [
     { decision: "APPROVED", timestamp: new Date(Date.now() - 8 * 60000) },
     { decision: "REJECTED", timestamp: new Date(Date.now() - 24 * 60000) },
@@ -230,6 +265,7 @@ function renderHeroStatistics(judgment) {
     document.getElementById("heroVerifiedTrades").innerText = tradeStatistics.verified;
     document.getElementById("heroProtectedFunds").innerText = formatAmount(totalVolume);
     document.getElementById("heroTrustScore").innerText = currentTrustScore + "%";
+    document.getElementById("aiDecisionsProcessed").innerText = aiDecisionsProcessed;
 }
 
 function renderRecentDecisions() {
@@ -252,7 +288,9 @@ function renderRecentDecisions() {
 function addRecentDecision(decision) {
     recentDecisions.unshift({ decision, timestamp: new Date() });
     recentDecisions = recentDecisions.slice(0, 5);
+    aiDecisionsProcessed += 1;
     renderRecentDecisions();
+    renderHeroStatistics();
 }
 
 function updateWorkflowMetrics(amount, validation) {
@@ -279,19 +317,41 @@ function updateTradeJudge(judgment) {
     const badge = document.getElementById("judgeDecision");
     badge.className = "judge-badge " + judgment.decision.toLowerCase().replace("_", "-");
     badge.innerText = judgment.decision;
+    document.getElementById("judgeRisk").innerText = judgment.risk;
     document.getElementById("judgeConfidence").innerText = judgment.confidence;
     document.getElementById("judgeReason").innerText = judgment.reason;
     addRecentDecision(judgment.decision);
 }
 
-function addTradeToHistory(id, buyer, seller, product, amount, status) {
+function addTrustEvent(title, detail, status) {
     const li = document.createElement("li");
-    li.innerText = id + " - " + buyer + " -> " + seller + " - " + product + " - " + amount + " - " + status;
+    const copy = document.createElement("span");
+    const heading = document.createElement("strong");
+    const description = document.createElement("span");
+    const badge = document.createElement("span");
+    copy.className = "event-copy";
+    heading.innerText = title;
+    description.innerText = detail;
+    const normalizedStatus = status.toLowerCase().replace("_", "-");
+    badge.className = "event-status " + (normalizedStatus.includes("reject") || normalizedStatus.includes("refund") ? "rejected" : normalizedStatus.includes("review") ? "review-required" : "approved");
+    badge.innerText = status;
+    copy.append(heading, description);
+    li.append(copy, badge);
     document.getElementById("tradeHistory").appendChild(li);
 }
 
-addTradeToHistory("TRADE001", "Amina", "Kwame", "Textile materials", 2000, "RELEASE_FUNDS");
-addTradeToHistory("TRADE002", "John", "Fatima", "Agricultural goods", 3500, "COMPLETED");
+function addTradeToHistory(id, buyer, seller, product, amount, status) {
+    addTrustEvent(
+        "Protected trade created",
+        id + " · " + buyer + " → " + seller + " · " + product + " · " + formatAmount(Number(amount)),
+        status
+    );
+}
+
+addTrustEvent("Trade Approved", "Lagos Textile Export Ltd → Accra Retail Partners", "APPROVED");
+addTrustEvent("Certificate Issued", "Business Trust Passport TA-2026-001", "VERIFIED");
+addTrustEvent("Escrow Locked", "Nairobi Agro Supply protected trade", "PROTECTED");
+addTrustEvent("Dispute Resolved", "Kigali Logistics Hub delivery evidence validated", "RESOLVED");
 renderEscrowDashboard();
 renderPlatformStatistics();
 renderHeroStatistics();
@@ -396,6 +456,11 @@ function submitTrade(event) {
         updateWorkflowMetrics(trade.amount, data);
         updateTradeJudge(data);
 
+        const fundsStatus = data.decision === "APPROVED" ? "RELEASED" : data.decision === "REJECTED" ? "DISPUTED" : "LOCKED";
+        document.getElementById("escrowFundsStatus").innerText = fundsStatus;
+        document.getElementById("escrowReleaseCondition").innerText = "AI trust conditions satisfied";
+        document.getElementById("escrowDecision").innerText = data.decision === "APPROVED" ? "RELEASE_FUNDS" : data.decision;
+
         document.getElementById("newTrade").innerText =
             "Created " + tradeId + " | Decision: " + data.decision;
 
@@ -458,6 +523,11 @@ function submitDispute(event) {
             " | Risk: " + data.risk_level +
             " | Reason: " + data.reason;
 
+        document.getElementById("escrowFundsStatus").innerText =
+            data.decision === "RELEASE_FUNDS" ? "RELEASED" : data.decision === "REFUND_BUYER" ? "REFUNDED" : "LOCKED";
+        document.getElementById("escrowDecision").innerText = data.decision;
+        addTrustEvent("Dispute Resolved", data.reason, data.decision);
+
         form.reset();
     })
     .catch(error => {
@@ -473,8 +543,8 @@ function loadReputation() {
     .then(res => res.json())
     .then(data => {
         document.getElementById("reputation").innerHTML =
-            "<span class='red'>Amina: " + data.amina_score +
-            "</span> | <span class='green'>Kwame: " + data.kwame_score + "</span>";
+            "<div class='metric-row'><span>Buyer Trust Score</span><strong>Accra Retail Partners · " + data.amina_score +
+            "</strong></div><div class='metric-row'><span>Seller Trust Score</span><strong>Lagos Textile Export Ltd · " + data.kwame_score + "</strong></div>";
     });
 }
 loadReputation();
@@ -540,6 +610,9 @@ fetch("http://127.0.0.1:5000/contract-trust")
 fetch("http://127.0.0.1:5000/escrow-status")
 .then(res => res.json())
 .then(data => {
+    document.getElementById("escrowFundsStatus").innerText = data.escrow_status;
+    document.getElementById("escrowReleaseCondition").innerText = data.condition;
+    document.getElementById("escrowDecision").innerText = data.ai_decision;
     document.getElementById("escrowStatus").innerText =
         "Status: " + data.escrow_status +
         " | Buyer: " + data.buyer +

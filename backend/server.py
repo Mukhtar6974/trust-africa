@@ -10,23 +10,24 @@ kwame_score = 85
 @app.route("/")
 def home():
     return """
-    <h1>Trust Africa Platform</h1>
+    <h1>Trust Africa</h1>
+    <p>AI-powered trust infrastructure for African commerce</p>
     <p>Status: ACTIVE</p>
     """
 
 @app.route("/marketplace")
 def marketplace():
     return jsonify({
-        "seller": "Kwame",
-        "product": "500 textile materials",
+        "seller": "Lagos Textile Export Ltd",
+        "product": "500 premium textile units",
         "price": 2000
     })
 
 @app.route("/trade")
 def trade():
     return jsonify({
-        "buyer": "Amina",
-        "seller": "Kwame",
+        "buyer": "Accra Retail Partners",
+        "seller": "Lagos Textile Export Ltd",
         "amount": 2000,
         "status": "RELEASE_FUNDS"
     })
@@ -125,8 +126,8 @@ def create_trade():
 
     return jsonify({
         "trade_id": "TRADE003",
-        "buyer": "New Buyer",
-        "seller": "New Seller",
+        "buyer": "Nairobi Agro Supply",
+        "seller": "Kigali Logistics Hub",
         "amount": 5000,
         "status": "OPEN"
     })
@@ -144,8 +145,8 @@ def trust_certificate():
 def escrow_status():
     return jsonify({
         "escrow_status": "LOCKED",
-        "buyer": "New Buyer",
-        "seller": "New Seller",
+        "buyer": "Nairobi Agro Supply",
+        "seller": "Kigali Logistics Hub",
         "amount": 5000,
         "condition": "Funds locked until seller provides valid proof",
         "ai_decision": "WAITING_FOR_EVIDENCE"
