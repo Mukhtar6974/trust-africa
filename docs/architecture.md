@@ -1,89 +1,62 @@
 # Trust Africa Architecture
 
-## Trust Beyond Borders
+## Flow
 
-### Mission
-
-Build a digital institution that helps honest people cooperate safely beyond borders.
-
----
-
-## Core Components
-
-### 1. Trust Guide
-
-Helps users create clear and fair agreements.
-
-Responsibilities:
-
-* Understand goals
-* Prevent misunderstandings
-* Recommend evidence requirements
-
----
-
-### 2. Protected Trade Agreement
-
-Stores:
-
-* Buyer
-* Seller
-* Product
-* Amount
-* Delivery Date
-* Evidence Requirements
-
----
-
-### 3. Escrow Engine
-
-Protects USDC until the agreement is completed.
+Buyer
+│
+▼
+Creates Trade
+│
+▼
+Trust Africa Platform
+│
+├── Reputation Engine
+├── Trust Certificate Engine
+├── Escrow Protection
+├── Dispute Resolution
+│
+▼
+GenLayer Intelligent Contract
+│
+├── AI Trade Validation
+├── Risk Assessment
+├── Evidence Analysis
+├── Trust Scoring
+│
+▼
+Decision
+│
+├── VERIFIED
+├── PENDING
+└── REJECTED
+│
+▼
+Escrow Release or Refund
 
 ---
 
-### 4. Evidence Engine
+## Components
 
-Collects:
+Frontend
+- Marketplace
+- Trade Dashboard
+- Reputation View
+- Trust Certificate View
 
-* Photos
-* Receipts
-* Tracking Numbers
-* Delivery Confirmation
+Backend
+- Trade Processing
+- Trust Analysis
+- Escrow Logic
+- API Layer
 
----
+GenLayer Layer
+- Intelligent Contract
+- AI Decision Engine
+- Trust Validation
+- Dispute Resolution
 
-### 5. AI Reasoning Engine
-
-Questions:
-
-* What was promised?
-* What happened?
-* What evidence exists?
-* How certain am I?
-* Should humans review this case?
-
----
-
-### 6. Human Validators
-
-Intervene when AI confidence is low.
-
----
-
-### 7. Reputation Engine
-
-Rewards honest cooperation and encourages long-term relationships.
-
----
-
-## Engineering Principles
-
-1. No honest person should ever have to choose between opportunity and safety.
-
-2. AI must never pretend certainty.
-
-3. Evidence is stronger than opinion.
-
-4. Human wisdom protects uncertainty.
-
-5. Trust should grow through honest behavior.
+Outputs
+- Trust Score
+- Risk Level
+- Trust Certificate
+- Escrow Decision
