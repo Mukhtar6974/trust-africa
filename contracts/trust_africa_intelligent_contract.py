@@ -37,6 +37,25 @@ class TrustAfrica(gl.Contract):
         self.evidence = ""
         self.confidence = 0
 
+   @gl.public.write
+    def create_trade(
+        self,
+        buyer: str,
+        seller: str,
+        product: str,
+        amount: int
+   ) -> None:
+
+        self.buyer = buyer
+        self.seller = seller
+        self.product = product
+        self.amount = amount
+
+        self.certificate_status = "PENDING"
+        self.risk_level = "MEDIUM"
+        self.trust_score = 70
+        self.dispute_decision = "Awaiting validation"
+
     @gl.public.view
     def get_trade(self) -> str:
         return f"{self.buyer} buying {self.product} from {self.seller} for {self.amount}"
