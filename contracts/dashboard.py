@@ -1,0 +1,31 @@
+print("===== TRUST AFRICA DASHBOARD =====")
+
+print()
+print("Marketplace Listings")
+print("---------------------")
+print("Seller: Kwame")
+print("Product: 500 textile materials")
+print("Price: 2000")
+
+print()
+print("Trade History")
+print("---------------------")
+print("TRADE001 - Amina -> Kwame - 2000")
+print("TRADE002 - John -> Fatima - 3500")
+
+print()
+print("Reputation")
+print("---------------------")
+print("Amina Trust Score: 60")
+print("Kwame Trust Score: 80")
+
+print()
+print("Escrow Status")
+print("---------------------")
+print("Funds Locked: False")
+print("Last Release Amount: 2000")
+
+print()
+print("Dispute Center")
+print("---------------------")
+print("TRADE001 - RESOLVED")

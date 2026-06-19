@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trust Africa</title>
+    <style>
+        body { font-family: Arial, sans-serif; background:#f4f7fb; margin:0; color:#1f2937; }
+        header { background:#0f172a; color:white; padding:30px; text-align:center; }
+        .container { width:90%; max-width:1100px; margin:25px auto; }
+        .status { background:#dcfce7; color:#166534; padding:12px; border-radius:8px; font-weight:bold; margin-bottom:20px; }
+        .grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+        .card { background:white; padding:22px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+        button { background:#0ea5e9; color:white; border:0; padding:10px 18px; border-radius:7px; font-weight:bold; cursor:pointer; }
+        .badge { display:inline-block; background:#e0f2fe; color:#0369a1; padding:7px 10px; border-radius:8px; margin-top:10px; }
+        .green { color:green; }
+        .red { color:#dc2626; }
+        @media(max-width:800px){ .grid{ grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Trust Africa Platform</h1>
+    <p>Digital trust infrastructure for African commerce</p>
+</header>
+
+<div class="container">
+    <div class="status" id="status">Loading backend...</div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>Marketplace</h2>
+            <p id="marketplace">Loading...</p>
+        </div>
+
+        <div class="card">
+            <h2>Trade</h2>
+            <p id="trade">Loading...</p>
+            <button onclick="createTrade()">Create New Trade</button>
+            <p id="newTrade"></p>
+        </div>
+
+        <div class="card">
+            <h2>AI Fraud Detection</h2>
+            <p id="fraudCheck">Loading fraud analysis...</p>
+        </div>
+
+        <div class="card">
+            <h2>Risk Dashboard</h2>
+            <p id="riskDashboard">Loading risk metrics...</p>
+        </div>
+
+        <div class="card">
+            <h2>Trade History</h2>
+            <ul id="tradeHistory"></ul>
+        </div>
+
+        <div class="card">
+            <h2>Reputation</h2>
+            <p id="reputation">Loading...</p>
+            <span class="badge">Trust Score Active</span>
+        </div>
+
+        <div class="card">
+            <h2>Dispute Center</h2>
+            <p id="dispute">Loading...</p>
+            <span class="badge">Resolution Engine Online</span>
+        </div>
+
+        <div class="card">
+            <h2>Trust Certificate</h2>
+            <p id="trustCertificate">Loading certificate...</p>
+        </div>
+
+        <div class="card">
+            <h2>AI Trust Analysis</h2>
+            <p id="trustAnalysis">Loading...</p>
+            <p>Funds are protected until trust conditions are met.</p>
+            <span class="badge">Escrow Protection Enabled</span>
+        </div>
+    </div>
+</div>
+
+<script>
+let tradeCount = 3;
+
+function addTradeToHistory(id, buyer, seller, amount, status) {
+    const li = document.createElement("li");
+    li.innerText = id + " - " + buyer + " -> " + seller + " - " + amount + " - " + status;
+    document.getElementById("tradeHistory").appendChild(li);
+}
+
+addTradeToHistory("TRADE001", "Amina", "Kwame", 2000, "RELEASE_FUNDS");
+addTradeToHistory("TRADE002", "John", "Fatima", 3500, "COMPLETED");
+
+fetch("http://127.0.0.1:5000/")
+.then(res => res.text())
+.then(data => {
+    document.getElementById("status").innerText = "Backend connected";
+});
+
+fetch("http://127.0.0.1:5000/marketplace")
+.then(res => res.json())
+.then(data => {
+    document.getElementById("marketplace").innerText =
+        data.seller + " is selling " + data.product + " for " + data.price;
+});
+
+fetch("http://127.0.0.1:5000/trade")
+.then(res => res.json())
+.then(data => {
+    document.getElementById("trade").innerText =
+        data.buyer + " buying from " + data.seller + " | Status: " + data.status;
+});
+
+function createTrade() {
+    fetch("http://127.0.0.1:5000/trade/create")
+    .then(res => res.json())
+    .then(data => {
+        tradeCount = tradeCount + 1;
+        const newId = "TRADE00" + tradeCount;
+
+        document.getElementById("newTrade").innerText =
+            "Created " + newId + ": " + data.buyer + " buying from " +
+            data.seller + " for " + data.amount + " | Status: " + data.status;
+
+        addTradeToHistory(newId, data.buyer, data.seller, data.amount, data.status);
+
+        loadReputation();
+    });
+}
+
+function loadReputation() {
+    fetch("http://127.0.0.1:5000/reputation")
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("reputation").innerHTML =
+            "<span class='red'>Amina: " + data.amina_score +
+            "</span> | <span class='green'>Kwame: " + data.kwame_score + "</span>";
+    });
+}
+loadReputation();
+
+fetch("http://127.0.0.1:5000/dispute")
+.then(res => res.json())
+.then(data => {
+    document.getElementById("dispute").innerText =
+        "Decision: " + data.decision +
+        " | Action: " + data.action +
+        " | Confidence: " + data.confidence;
+});
+
+fetch("http://127.0.0.1:5000/fraud-check")
+.then(res => res.json())
+.then(data => {
+    document.getElementById("fraudCheck").innerText =
+        "Risk Level: " + data.risk_level +
+        " | Fraud Score: " + data.fraud_score +
+        " | Recommendation: " + data.recommendation;
+});
+
+fetch("http://127.0.0.1:5000/risk-dashboard")
+.then(res => res.json())
+.then(data => {
+    document.getElementById("riskDashboard").innerText =
+        "Active Trades: " + data.active_trades +
+        " | Safe Trades: " + data.safe_trades +
+        " | Disputed: " + data.disputed_trades +
+        " | Alerts: " + data.fraud_alerts +
+        " | Status: " + data.system_status;
+});
+
+fetch("http://127.0.0.1:5000/trust-certificate")
+.then(res => res.json())
+.then(data => {
+    document.getElementById("trustCertificate").innerText =
+        "Certificate: " + data.certificate_id +
+        " | Status: " + data.status +
+        " | Score: " + data.trust_score +
+        " | Issuer: " + data.issuer;
+});
+
+fetch("http://127.0.0.1:5000/trust-analysis")
+.then(res => res.json())
+.then(data => {
+    document.getElementById("trustAnalysis").innerText =
+        "Trust Score: " + data.score +
+        " | Risk: " + data.risk +
+        " | " + data.recommendation;
+});
+</script>
+
+</body>
+</html>
