@@ -3,25 +3,43 @@
 <head>
     <title>Trust Africa</title>
     <style>
-        body { font-family: Arial, sans-serif; background:#f4f7fb; margin:0; color:#1f2937; }
-        header { background:#0f172a; color:white; padding:30px; text-align:center; }
-        .container { width:90%; max-width:1100px; margin:25px auto; }
-        .status { background:#dcfce7; color:#166534; padding:12px; border-radius:8px; font-weight:bold; margin-bottom:20px; }
-        .grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-        .card { background:white; padding:22px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.08); }
-        button { background:#0ea5e9; color:white; border:0; padding:10px 18px; border-radius:7px; font-weight:bold; cursor:pointer; }
-        form { display:grid; gap:10px; margin-top:16px; }
-        input, textarea { box-sizing:border-box; width:100%; border:1px solid #cbd5e1; border-radius:7px; padding:10px; font:inherit; }
-        textarea { min-height:90px; resize:vertical; }
-        label { font-size:14px; font-weight:bold; }
-        .badge { display:inline-block; background:#e0f2fe; color:#0369a1; padding:7px 10px; border-radius:8px; margin-top:10px; }
-        .judge-badge { display:inline-block; background:#e2e8f0; color:#334155; padding:7px 10px; border-radius:999px; font-weight:bold; }
-        .judge-badge.approved { background:#dcfce7; color:#166534; }
-        .judge-badge.review-required { background:#fef3c7; color:#92400e; }
-        .judge-badge.rejected { background:#fee2e2; color:#991b1b; }
-        .green { color:green; }
+        :root { --navy:#0b1739; --blue:#2563eb; --cyan:#06b6d4; --surface:#ffffff; --muted:#64748b; --border:#dbe5f1; }
+        * { box-sizing:border-box; }
+        body { font-family:Inter,Segoe UI,Arial,sans-serif; background:linear-gradient(180deg,#edf5ff 0,#f8fafc 420px); margin:0; color:#172033; line-height:1.55; }
+        header { background:linear-gradient(135deg,var(--navy),#163b76 65%,#0e7490); color:white; padding:54px 24px 70px; text-align:center; }
+        header h1 { margin:0 0 10px; font-size:clamp(2.2rem,5vw,3.6rem); letter-spacing:-0.04em; }
+        header p { margin:0; color:#cfe8ff; font-size:1.1rem; }
+        .container { width:min(94%,1280px); margin:-28px auto 48px; }
+        .status { background:#dcfce7; color:#166534; padding:14px 18px; border:1px solid #bbf7d0; border-radius:14px; font-weight:700; margin-bottom:24px; box-shadow:0 8px 24px rgba(15,23,42,0.08); }
+        .hero-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:28px; }
+        .hero-stat { background:rgba(255,255,255,0.96); border:1px solid var(--border); border-radius:18px; padding:24px; box-shadow:0 12px 32px rgba(15,23,42,0.08); }
+        .hero-stat span { display:block; color:var(--muted); font-size:0.82rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; }
+        .hero-stat strong { display:block; color:var(--navy); font-size:clamp(1.6rem,3vw,2.25rem); margin-top:8px; }
+        .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; }
+        .card { background:var(--surface); padding:30px; border:1px solid var(--border); border-radius:20px; min-height:180px; box-shadow:0 14px 36px rgba(15,23,42,0.08); }
+        .card h2 { color:var(--navy); margin:0 0 16px; font-size:1.35rem; }
+        button { background:linear-gradient(135deg,var(--blue),#0ea5e9); color:white; border:0; padding:13px 20px; border-radius:10px; font-weight:800; cursor:pointer; box-shadow:0 8px 18px rgba(37,99,235,0.22); transition:transform .2s,box-shadow .2s; }
+        button:hover { transform:translateY(-1px); box-shadow:0 12px 24px rgba(37,99,235,0.28); }
+        button:disabled { cursor:wait; opacity:.65; transform:none; }
+        form { display:grid; gap:12px; margin-top:18px; }
+        input, textarea { width:100%; border:1px solid #cbd5e1; border-radius:10px; padding:12px 13px; font:inherit; background:#f8fafc; }
+        input:focus, textarea:focus { outline:3px solid #bfdbfe; border-color:var(--blue); background:white; }
+        textarea { min-height:100px; resize:vertical; }
+        label { font-size:14px; font-weight:800; color:#334155; }
+        .badge { display:inline-block; background:#e0f2fe; color:#0369a1; padding:7px 11px; border-radius:999px; margin-top:10px; font-weight:700; }
+        .judge-badge,.decision-pill { display:inline-block; background:#e2e8f0; color:#334155; padding:7px 10px; border-radius:999px; font-size:.82rem; font-weight:800; }
+        .judge-badge.approved,.decision-pill.approved { background:#dcfce7; color:#166534; }
+        .judge-badge.review-required,.decision-pill.review-required { background:#fef3c7; color:#92400e; }
+        .judge-badge.rejected,.decision-pill.rejected { background:#fee2e2; color:#991b1b; }
+        .route-list,.decision-list { display:grid; gap:12px; list-style:none; padding:0; margin:0; }
+        .route-list li,.decision-list li { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; }
+        .route-list strong { color:#1d4ed8; }
+        .decision-list time { color:var(--muted); font-size:.85rem; }
+        .green { color:#15803d; }
         .red { color:#dc2626; }
-        @media(max-width:800px){ .grid{ grid-template-columns:1fr; } }
+        footer { background:var(--navy); color:#cfe8ff; text-align:center; padding:28px 20px; font-weight:700; }
+        @media(max-width:900px){ .hero-stats{grid-template-columns:repeat(2,1fr)} .grid{grid-template-columns:1fr} }
+        @media(max-width:560px){ header{padding:40px 18px 58px} .container{width:min(92%,1280px)} .hero-stats{grid-template-columns:1fr;gap:12px} .card{padding:22px;border-radius:16px} .route-list li,.decision-list li{align-items:flex-start;flex-direction:column} }
     </style>
 </head>
 <body>
@@ -34,10 +52,31 @@
 <div class="container">
     <div class="status" id="status">Loading backend...</div>
 
+    <section class="hero-stats" aria-label="Commerce overview">
+        <div class="hero-stat"><span>Total Trade Volume</span><strong id="heroTradeVolume">0.00</strong></div>
+        <div class="hero-stat"><span>Verified Trades</span><strong id="heroVerifiedTrades">0</strong></div>
+        <div class="hero-stat"><span>Protected Funds</span><strong id="heroProtectedFunds">0.00</strong></div>
+        <div class="hero-stat"><span>Trust Score</span><strong id="heroTrustScore">92%</strong></div>
+    </section>
+
     <div class="grid">
         <div class="card">
             <h2>Marketplace</h2>
             <p id="marketplace">Loading...</p>
+        </div>
+
+        <div class="card">
+            <h2>Cross-Border Trade Activity</h2>
+            <ul class="route-list">
+                <li><strong>Nigeria &rarr; Ghana</strong><span>Textiles &amp; manufactured goods</span></li>
+                <li><strong>Kenya &rarr; Uganda</strong><span>Agricultural products</span></li>
+                <li><strong>South Africa &rarr; Botswana</strong><span>Industrial supplies</span></li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Recent AI Decisions</h2>
+            <ul id="recentDecisions" class="decision-list"></ul>
         </div>
 
         <div class="card">
@@ -140,6 +179,8 @@
     </div>
 </div>
 
+<footer>Trust Africa &mdash; AI-powered trust infrastructure for African commerce.</footer>
+
 <script>
 let riskMetrics = null;
 let escrowMetrics = {
@@ -153,6 +194,12 @@ let tradeStatistics = {
     pending: 0,
     disputed: 0
 };
+let currentTrustScore = 92;
+let recentDecisions = [
+    { decision: "APPROVED", timestamp: new Date(Date.now() - 8 * 60000) },
+    { decision: "REJECTED", timestamp: new Date(Date.now() - 24 * 60000) },
+    { decision: "REVIEW_REQUIRED", timestamp: new Date(Date.now() - 41 * 60000) }
+];
 
 function formatAmount(amount) {
     return new Intl.NumberFormat("en", {
@@ -176,6 +223,38 @@ function renderPlatformStatistics() {
         " | Disputed Trades: " + tradeStatistics.disputed;
 }
 
+function renderHeroStatistics(judgment) {
+    if (judgment) currentTrustScore = Number.parseInt(judgment.confidence, 10);
+    const totalVolume = escrowMetrics.locked + escrowMetrics.released + escrowMetrics.disputed;
+    document.getElementById("heroTradeVolume").innerText = formatAmount(totalVolume);
+    document.getElementById("heroVerifiedTrades").innerText = tradeStatistics.verified;
+    document.getElementById("heroProtectedFunds").innerText = formatAmount(totalVolume);
+    document.getElementById("heroTrustScore").innerText = currentTrustScore + "%";
+}
+
+function renderRecentDecisions() {
+    const list = document.getElementById("recentDecisions");
+    list.replaceChildren();
+
+    recentDecisions.forEach(item => {
+        const row = document.createElement("li");
+        const badge = document.createElement("span");
+        const time = document.createElement("time");
+        badge.className = "decision-pill " + item.decision.toLowerCase().replace("_", "-");
+        badge.innerText = item.decision;
+        time.dateTime = item.timestamp.toISOString();
+        time.innerText = item.timestamp.toLocaleString();
+        row.append(badge, time);
+        list.appendChild(row);
+    });
+}
+
+function addRecentDecision(decision) {
+    recentDecisions.unshift({ decision, timestamp: new Date() });
+    recentDecisions = recentDecisions.slice(0, 5);
+    renderRecentDecisions();
+}
+
 function updateWorkflowMetrics(amount, validation) {
     const numericAmount = Number(amount);
     tradeStatistics.total += 1;
@@ -193,6 +272,7 @@ function updateWorkflowMetrics(amount, validation) {
 
     renderEscrowDashboard();
     renderPlatformStatistics();
+    renderHeroStatistics(validation);
 }
 
 function updateTradeJudge(judgment) {
@@ -201,6 +281,7 @@ function updateTradeJudge(judgment) {
     badge.innerText = judgment.decision;
     document.getElementById("judgeConfidence").innerText = judgment.confidence;
     document.getElementById("judgeReason").innerText = judgment.reason;
+    addRecentDecision(judgment.decision);
 }
 
 function addTradeToHistory(id, buyer, seller, product, amount, status) {
@@ -213,6 +294,8 @@ addTradeToHistory("TRADE001", "Amina", "Kwame", "Textile materials", 2000, "RELE
 addTradeToHistory("TRADE002", "John", "Fatima", "Agricultural goods", 3500, "COMPLETED");
 renderEscrowDashboard();
 renderPlatformStatistics();
+renderHeroStatistics();
+renderRecentDecisions();
 
 fetch("http://127.0.0.1:5000/")
 .then(res => res.text())

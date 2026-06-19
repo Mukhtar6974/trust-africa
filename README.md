@@ -25,6 +25,8 @@ The platform helps buyers and sellers trade safely by combining:
 - Professional V3 trade creation workflow
 - Live escrow fund totals and platform statistics
 - AI Trade Judge with autonomous trust decisions
+- V5 commerce intelligence dashboard
+- Cross-border African trade activity and recent AI decisions
 
 Trust Africa addresses one of Africa's largest commerce problems:
 
@@ -129,6 +131,12 @@ Tracks total, verified, pending, and disputed trades across the live dashboard s
 Trust Africa uses AI-powered trust adjudication to determine whether a trade should proceed, be rejected, or require manual review.
 
 The `/ai-judge` endpoint evaluates buyer, seller, product, amount, and evidence data, then returns an `APPROVED`, `REVIEW_REQUIRED`, or `REJECTED` decision with confidence, risk, and reasoning.
+
+### V5 Commerce Intelligence Dashboard
+
+The responsive V5 interface adds hero statistics for total trade volume, verified trades, protected funds, and trust score. It also highlights sample African trade corridors between Nigeria and Ghana, Kenya and Uganda, and South Africa and Botswana.
+
+Recent AI Decisions records `APPROVED`, `REJECTED`, and `REVIEW_REQUIRED` outcomes with timestamps and updates whenever the AI Trade Judge evaluates a new trade.
 
 ---
 
