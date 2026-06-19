@@ -141,9 +141,9 @@ Recent AI Decisions records `APPROVED`, `REJECTED`, and `REVIEW_REQUIRED` outcom
 
 ### Professional Product Interface
 
-Trust Africa now presents a production-style fintech workspace with a focused hero, network KPIs, protected trade creation, explainable AI decisions, escrow controls, Business Trust Passports, cross-border activity, dispute resolution, and an auditable trust-event feed. The responsive layout is designed for desktop and mobile commerce operations.
+Trust Africa now presents a production-style fintech SaaS landing page with a focused hero, a three-step explanation, one protected-trade form, and one concise AI result panel. The responsive layout is designed for desktop and mobile commerce operations.
 
-The simplified dashboard navigation links directly to Overview, Create Trade, Trust Decision, Escrow, Disputes, and Activity. Four primary workflow cards stay in focus, while cross-border activity, trust events, dispute tools, and platform statistics sit in a dedicated secondary operations area.
+The simplified navigation links directly to Home, How it Works, Create Trade, Trust AI, and Contact. Business Trust Passports, recent trust events, and AI dispute resolution remain available in a clean lower operations section without crowding the primary demo.
 
 ---
 
@@ -265,7 +265,7 @@ in your browser.
 
 ## Screenshots
 
-Trust Africa professional product dashboard featuring the Trust Network, AI Trust Decision, Escrow Protection, Business Trust Passport, and Recent Trust Events panels.
+Trust Africa professional SaaS landing page featuring protected trade creation, an AI trust result, Business Trust Passports, Recent Trust Events, and AI Dispute Resolution.
 
 ---
 
