@@ -77,12 +77,16 @@
             <p>Funds are protected until trust conditions are met.</p>
             <span class="badge">Escrow Protection Enabled</span>
         </div>
+
+        <div class="card">
+            <h2>Escrow Status</h2>
+            <p id="escrowStatus">Loading escrow status...</p>
+            <span class="badge">Evidence Validation Active</span>
+        </div>
     </div>
 </div>
 
 <script>
-let tradeCount = 3;
-
 function addTradeToHistory(id, buyer, seller, amount, status) {
     const li = document.createElement("li");
     li.innerText = id + " - " + buyer + " -> " + seller + " - " + amount + " - " + status;
@@ -116,8 +120,7 @@ function createTrade() {
     fetch("http://127.0.0.1:5000/trade/create")
     .then(res => res.json())
     .then(data => {
-        tradeCount = tradeCount + 1;
-        const newId = "TRADE00" + tradeCount;
+        const newId = "TRADE" + Date.now();
 
         document.getElementById("newTrade").innerText =
             "Created " + newId + ": " + data.buyer + " buying from " +
@@ -187,6 +190,33 @@ fetch("http://127.0.0.1:5000/trust-analysis")
         " | Risk: " + data.risk +
         " | " + data.recommendation;
 });
+
+fetch("http://127.0.0.1:5000/contract-trust")
+.then(res => res.json())
+.then(data => {
+
+    document.getElementById("trustCertificate").innerText =
+        "Certificate: " + data.certificate_status;
+
+    document.getElementById("trustAnalysis").innerText =
+        "Trust Score from GenLayer Contract | Risk: " +
+        data.risk_level +
+        " | Validation: " +
+        data.trade_validation;
+});
+
+fetch("http://127.0.0.1:5000/escrow-status")
+.then(res => res.json())
+.then(data => {
+    document.getElementById("escrowStatus").innerText =
+        "Status: " + data.escrow_status +
+        " | Buyer: " + data.buyer +
+        " | Seller: " + data.seller +
+        " | Amount: " + data.amount +
+        " | Condition: " + data.condition +
+        " | AI Decision: " + data.ai_decision;
+});
+
 </script>
 
 </body>

@@ -13,6 +13,10 @@ The platform helps buyers and sellers trade safely by combining:
 - Trust Certificates
 - Fraud Detection
 - Trade History Tracking
+- GenLayer Intelligent Contract validation
+- Evidence validation for escrow decisions
+- Dynamic trade creation with unique timestamp-based IDs
+- Escrow status API integration
 
 Trust Africa addresses one of Africa's largest commerce problems:
 
@@ -66,6 +70,22 @@ Protects funds until trade conditions are satisfied.
 
 Maintains historical records of transactions.
 
+### GenLayer Intelligent Contract
+
+Validates trade conditions and supplies intelligent trust decisions to the dashboard.
+
+### Evidence Validation
+
+Evaluates submitted trade evidence before escrow funds can be released.
+
+### Dynamic Trade Creation
+
+Creates unlimited unique frontend trade records using timestamp-based IDs.
+
+### Escrow Status API
+
+Exposes live escrow state, parties, amount, release conditions, and AI evidence decisions.
+
 ---
 
 ## Architecture
@@ -101,6 +121,9 @@ Modules:
 | /reputation | Reputation score |
 | /dispute | Dispute resolution |
 | /trust-analysis | AI trust analysis |
+| /contract-trust | GenLayer Intelligent Contract validation |
+| /trade/create | Dynamic trade creation |
+| /escrow-status | Escrow status and evidence validation |
 
 ---
 
@@ -110,7 +133,7 @@ Trust Africa aims to become the trust infrastructure layer for African commerce.
 
 Future versions may include:
 
-- GenLayer Intelligent Contracts
+- Expanded GenLayer Intelligent Contract capabilities
 - Digital Identity Verification
 - On-chain Trust Scores
 - Cross-border Trade Verification

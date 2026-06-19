@@ -46,6 +46,17 @@ def dispute():
         "confidence": "96%"
     })
 
+@app.route("/contract-trust")
+def contract_trust():
+    return jsonify({
+        "source": "GenLayer Intelligent Contract",
+        "trade_validation": "APPROVED",
+        "trust_score": 92,
+        "risk_level": "LOW",
+        "certificate_status": "VERIFIED",
+        "decision": "Escrow can release funds after trade confirmation"
+    })
+
 @app.route("/trust-analysis")
 def trust_analysis():
     return jsonify({
@@ -94,6 +105,17 @@ def trust_certificate():
         "status": "VERIFIED",
         "trust_score": 92,
         "issuer": "Trust Africa AI"
+    })
+
+@app.route("/escrow-status")
+def escrow_status():
+    return jsonify({
+        "escrow_status": "LOCKED",
+        "buyer": "New Buyer",
+        "seller": "New Seller",
+        "amount": 5000,
+        "condition": "Funds locked until seller provides valid proof",
+        "ai_decision": "WAITING_FOR_EVIDENCE"
     })
 
 if __name__ == "__main__":
