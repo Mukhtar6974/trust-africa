@@ -138,3 +138,62 @@ Year:
 ## License
 
 MIT License
+
+## How To Run
+
+### Clone Repository
+
+```bash
+git clone https://github.com/Mukhtar6974/trust-africa.git
+cd trust-africa
+```
+
+### Install Dependencies
+
+```bash
+pip install flask flask-cors
+```
+
+### Start Backend
+
+```bash
+python app.py
+```
+
+Backend will run at:
+
+```text
+http://127.0.0.1:5000
+```
+
+### Open Frontend
+
+Open:
+
+```text
+frontend/index.html
+```
+
+in your browser.
+
+---
+
+## Screenshots
+
+Trust Africa Dashboard
+
+(Add dashboard screenshots here)
+
+---
+
+## GenLayer Vision
+
+Trust Africa is being developed as a trust infrastructure layer that can leverage GenLayer intelligent contracts for:
+
+- AI-powered trade verification
+- Trust certificate issuance
+- Automated dispute resolution
+- Reputation scoring
+- Cross-border commerce validation
+
+The goal is to create a trusted commerce network for Africa powered by intelligent contract technology.
