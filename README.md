@@ -1,44 +1,140 @@
 # Trust Africa
 
-## Trust Beyond Borders
+## Overview
 
-### Vision
+Trust Africa is a digital trust infrastructure platform for African commerce built using GenLayer-inspired intelligent contract architecture.
 
-To build the trust infrastructure for African commerce.
+The platform helps buyers and sellers trade safely by combining:
 
-### Mission
+- AI Trust Analysis
+- Reputation Scoring
+- Escrow Protection
+- Dispute Resolution
+- Trust Certificates
+- Fraud Detection
+- Trade History Tracking
 
-No honest person should ever have to choose between opportunity and safety.
+Trust Africa addresses one of Africa's largest commerce problems:
 
-Trust Africa protects honest agreements through:
+> Lack of trust between trading parties.
 
-- Artificial Intelligence
-- Evidence-based reasoning
-- Human accountability
-- Transparent governance
-
-## Trust Africa Genesis V0.1
-
-Our first goal is simple:
-
-Protect one honest cross-border trade between two strangers.
-
-If we can protect one agreement,
-we can protect a thousand.
-
-If we can protect a thousand,
-we can help build a continent where trust travels farther than fear.
+Instead of relying only on payment systems, Trust Africa creates a trust layer that helps participants determine whether a transaction is safe before money changes hands.
 
 ---
 
-## First Principle
+## Problem
 
-People are not afraid of sending money.
+Millions of businesses and individuals across Africa struggle with:
 
-They are afraid of trusting each other.
+- Online fraud
+- Fake suppliers
+- Unverified merchants
+- Payment disputes
+- Cross-border trust issues
+
+Trust Africa introduces an intelligent trust system that evaluates trade participants and provides transparent trust signals.
 
 ---
 
-## Motto
+## Core Features
 
-Trust Beyond Borders
+### Marketplace
+
+View active trades and commerce opportunities.
+
+### Reputation Engine
+
+Tracks trust scores for buyers and sellers.
+
+### AI Fraud Detection
+
+Analyzes trade activity and detects suspicious behavior.
+
+### Trust Certificates
+
+Generates verifiable trust credentials for participants.
+
+### Dispute Resolution
+
+Provides AI-assisted dispute handling and resolution.
+
+### Escrow Protection
+
+Protects funds until trade conditions are satisfied.
+
+### Trade History
+
+Maintains historical records of transactions.
+
+---
+
+## Architecture
+
+Frontend:
+- HTML
+- CSS
+- JavaScript
+
+Backend:
+- Python
+- Flask
+
+Modules:
+- Reputation Engine
+- Fraud Detection
+- Escrow Logic
+- Trust Certificates
+- Trade Validation
+
+---
+
+## Example API Endpoints
+
+| Endpoint | Description |
+|-----------|------------|
+| / | System status |
+| /marketplace | Marketplace data |
+| /trade | Active trade |
+| /fraud-check | Fraud analysis |
+| /risk-dashboard | Risk metrics |
+| /trust-certificate | Trust certificate |
+| /reputation | Reputation score |
+| /dispute | Dispute resolution |
+| /trust-analysis | AI trust analysis |
+
+---
+
+## Vision
+
+Trust Africa aims to become the trust infrastructure layer for African commerce.
+
+Future versions may include:
+
+- GenLayer Intelligent Contracts
+- Digital Identity Verification
+- On-chain Trust Scores
+- Cross-border Trade Verification
+- Business Trust Passports
+- AI-powered Commercial Arbitration
+
+---
+
+## Repository
+
+Project Name:
+Trust Africa
+
+Author:
+Mukhtar6974
+
+Status:
+MVP Prototype
+
+Year:
+2026
+
+---
+
+## License
+
+MIT License
