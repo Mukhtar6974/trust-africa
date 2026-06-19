@@ -37,13 +37,13 @@
         </div>
 
         <div class="card">
-            <h2>Trade</h2>
+            <h2>Create Trade</h2>
             <p id="trade">Loading...</p>
             <form id="tradeForm" onsubmit="submitTrade(event)">
-                <label for="buyerName">Buyer name</label>
+                <label for="buyerName">Buyer Name</label>
                 <input id="buyerName" name="buyer" type="text" required>
 
-                <label for="sellerName">Seller name</label>
+                <label for="sellerName">Seller Name</label>
                 <input id="sellerName" name="seller" type="text" required>
 
                 <label for="productName">Product</label>
@@ -52,10 +52,10 @@
                 <label for="tradeAmount">Amount</label>
                 <input id="tradeAmount" name="amount" type="number" min="0.01" step="0.01" required>
 
-                <label for="tradeEvidence">Evidence / proof</label>
+                <label for="tradeEvidence">Evidence</label>
                 <textarea id="tradeEvidence" name="evidence" required></textarea>
 
-                <button type="submit">Submit Trade</button>
+                <button type="submit">Create Trade</button>
             </form>
             <p id="newTrade" aria-live="polite"></p>
         </div>
@@ -68,6 +68,18 @@
         <div class="card">
             <h2>Risk Dashboard</h2>
             <p id="riskDashboard">Loading risk metrics...</p>
+        </div>
+
+        <div class="card">
+            <h2>Escrow Dashboard</h2>
+            <p id="escrowDashboard">Loading escrow totals...</p>
+            <span class="badge">Live Fund Tracking</span>
+        </div>
+
+        <div class="card">
+            <h2>Platform Statistics</h2>
+            <p id="platformStatistics">Loading trade statistics...</p>
+            <span class="badge">V3 Workflow Active</span>
         </div>
 
         <div class="card">
@@ -119,6 +131,58 @@
 
 <script>
 let riskMetrics = null;
+let escrowMetrics = {
+    locked: 0,
+    released: 5500,
+    disputed: 0
+};
+let tradeStatistics = {
+    total: 2,
+    verified: 2,
+    pending: 0,
+    disputed: 0
+};
+
+function formatAmount(amount) {
+    return new Intl.NumberFormat("en", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
+}
+
+function renderEscrowDashboard() {
+    document.getElementById("escrowDashboard").innerText =
+        "Total Locked Funds: " + formatAmount(escrowMetrics.locked) +
+        " | Total Released Funds: " + formatAmount(escrowMetrics.released) +
+        " | Total Disputed Funds: " + formatAmount(escrowMetrics.disputed);
+}
+
+function renderPlatformStatistics() {
+    document.getElementById("platformStatistics").innerText =
+        "Total Trades: " + tradeStatistics.total +
+        " | Verified Trades: " + tradeStatistics.verified +
+        " | Pending Trades: " + tradeStatistics.pending +
+        " | Disputed Trades: " + tradeStatistics.disputed;
+}
+
+function updateWorkflowMetrics(amount, validation) {
+    const numericAmount = Number(amount);
+    tradeStatistics.total += 1;
+
+    if (validation.decision === "APPROVED") {
+        escrowMetrics.released += numericAmount;
+        tradeStatistics.verified += 1;
+    } else if (validation.decision === "REJECTED") {
+        escrowMetrics.disputed += numericAmount;
+        tradeStatistics.disputed += 1;
+    } else {
+        escrowMetrics.locked += numericAmount;
+        tradeStatistics.pending += 1;
+    }
+
+    renderEscrowDashboard();
+    renderPlatformStatistics();
+}
 
 function addTradeToHistory(id, buyer, seller, product, amount, status) {
     const li = document.createElement("li");
@@ -128,6 +192,8 @@ function addTradeToHistory(id, buyer, seller, product, amount, status) {
 
 addTradeToHistory("TRADE001", "Amina", "Kwame", "Textile materials", 2000, "RELEASE_FUNDS");
 addTradeToHistory("TRADE002", "John", "Fatima", "Agricultural goods", 3500, "COMPLETED");
+renderEscrowDashboard();
+renderPlatformStatistics();
 
 fetch("http://127.0.0.1:5000/")
 .then(res => res.text())
@@ -148,22 +214,6 @@ fetch("http://127.0.0.1:5000/trade")
     document.getElementById("trade").innerText =
         data.buyer + " buying from " + data.seller + " | Status: " + data.status;
 });
-
-function createTrade() {
-    fetch("http://127.0.0.1:5000/trade/create")
-    .then(res => res.json())
-    .then(data => {
-        const newId = "TRADE" + Date.now();
-
-        document.getElementById("newTrade").innerText =
-            "Created " + newId + ": " + data.buyer + " buying from " +
-            data.seller + " for " + data.amount + " | Status: " + data.status;
-
-        addTradeToHistory(newId, data.buyer, data.seller, "General goods", data.amount, data.status);
-
-        loadReputation();
-    });
-}
 
 function renderRiskDashboard() {
     if (!riskMetrics) return;
@@ -235,9 +285,16 @@ function submitTrade(event) {
         );
 
         updateRiskDashboard(data.risk_level);
+        updateWorkflowMetrics(trade.amount, data);
 
         document.getElementById("newTrade").innerText =
             "Created " + tradeId + " | Decision: " + data.decision;
+
+        document.getElementById("trustCertificate").innerText =
+            "Certificate: " + tradeId +
+            " | Status: " + data.certificate_status +
+            " | Score: " + data.trust_score +
+            " | Issuer: Trust Africa AI";
 
         document.getElementById("trustAnalysis").innerText =
             "Trade: " + tradeId +

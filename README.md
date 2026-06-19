@@ -22,6 +22,8 @@ The platform helps buyers and sellers trade safely by combining:
 - GenLayer-ready evidence workflow
 - AI dispute resolution using buyer claims and seller evidence
 - Escrow release or buyer refund decisions
+- Professional V3 trade creation workflow
+- Live escrow fund totals and platform statistics
 
 Trust Africa addresses one of Africa's largest commerce problems:
 
@@ -108,6 +110,18 @@ Models the evidence-to-decision flow needed for future GenLayer intelligent cont
 Compares the buyer claim with the seller response and evidence to recommend an escrow decision.
 
 Seller proof, receipts, or delivery confirmation can trigger `RELEASE_FUNDS`; unsupported non-delivery claims can trigger `REFUND_BUYER`; inconclusive disputes are sent to `MANUAL_REVIEW`.
+
+### Trust Africa V3 Trade Workflow
+
+The Create Trade form captures buyer, seller, product, amount, and evidence data. Each submission receives a unique trade ID, runs through evidence validation, enters Trade History, and refreshes the Risk Dashboard, Trust Certificate, and AI Trust Analysis.
+
+### Escrow Dashboard
+
+Tracks total locked, released, and disputed funds as trade validation decisions are returned.
+
+### Platform Statistics
+
+Tracks total, verified, pending, and disputed trades across the live dashboard session.
 
 ---
 
