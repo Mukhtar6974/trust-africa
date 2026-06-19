@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -117,6 +117,38 @@ def escrow_status():
         "condition": "Funds locked until seller provides valid proof",
         "ai_decision": "WAITING_FOR_EVIDENCE"
     })
+
+@app.route("/validate-evidence", methods=["POST"])
+def validate_evidence():
+    payload = request.get_json(silent=True) or {}
+    evidence = str(payload.get("evidence", "")).lower()
+
+    if any(keyword in evidence for keyword in ("scam", "fake", "fraud")):
+        result = {
+            "decision": "REJECTED",
+            "risk_level": "HIGH",
+            "trust_score": 20,
+            "certificate_status": "REJECTED",
+            "reason": "Evidence contains high-risk fraud indicators"
+        }
+    elif any(keyword in evidence for keyword in ("receipt", "delivered", "confirmed", "proof")):
+        result = {
+            "decision": "APPROVED",
+            "risk_level": "LOW",
+            "trust_score": 92,
+            "certificate_status": "VERIFIED",
+            "reason": "Evidence appears valid"
+        }
+    else:
+        result = {
+            "decision": "PENDING",
+            "risk_level": "MEDIUM",
+            "trust_score": 60,
+            "certificate_status": "PENDING",
+            "reason": "More evidence is required for validation"
+        }
+
+    return jsonify(result)
 
 if __name__ == "__main__":
     app.run(debug=True)

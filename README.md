@@ -17,6 +17,9 @@ The platform helps buyers and sellers trade safely by combining:
 - Evidence validation for escrow decisions
 - Dynamic trade creation with unique timestamp-based IDs
 - Escrow status API integration
+- Trade submission form
+- AI-powered trade validation
+- GenLayer-ready evidence workflow
 
 Trust Africa addresses one of Africa's largest commerce problems:
 
@@ -74,9 +77,9 @@ Maintains historical records of transactions.
 
 Validates trade conditions and supplies intelligent trust decisions to the dashboard.
 
-### Evidence Validation
+### Evidence Validation Endpoint
 
-Evaluates submitted trade evidence before escrow funds can be released.
+The `/validate-evidence` endpoint evaluates submitted trade evidence before escrow funds can be released.
 
 ### Dynamic Trade Creation
 
@@ -85,6 +88,18 @@ Creates unlimited unique frontend trade records using timestamp-based IDs.
 ### Escrow Status API
 
 Exposes live escrow state, parties, amount, release conditions, and AI evidence decisions.
+
+### Trade Submission Form
+
+Captures buyer, seller, product, amount, and evidence details, then creates a unique timestamp-based trade record.
+
+### AI-Powered Trade Validation
+
+Submits evidence to the backend for keyword-based risk classification, trust scoring, and certificate decisions.
+
+### GenLayer-Ready Workflow
+
+Models the evidence-to-decision flow needed for future GenLayer intelligent contract validation.
 
 ---
 
@@ -124,6 +139,7 @@ Modules:
 | /contract-trust | GenLayer Intelligent Contract validation |
 | /trade/create | Dynamic trade creation |
 | /escrow-status | Escrow status and evidence validation |
+| /validate-evidence | AI-powered trade evidence validation |
 
 ---
 
