@@ -164,6 +164,75 @@
         @media(max-width:920px){ .site-nav{flex-wrap:wrap;padding:12px 0}.site-links{order:3;width:100%;gap:16px;overflow-x:auto;padding-bottom:4px}.site-links a{white-space:nowrap}.demo-grid,.secondary-grid{grid-template-columns:1fr}.steps-grid{grid-template-columns:repeat(2,1fr)}.landing-section{padding:70px 0}.contact-strip .landing-inner{align-items:flex-start;flex-direction:column} }
         @media(max-width:620px){ .site-nav{min-height:64px}.landing-hero{padding:74px 0 86px}.landing-actions{display:grid}.landing-button{width:100%}.saas-card{padding:22px}.form-grid,.steps-grid{grid-template-columns:1fr}.landing-section{padding:58px 0}.result-row{flex-direction:column;gap:5px}.result-row strong,.result-row span:last-child{text-align:left}.escrow-totals{grid-template-columns:1fr}.mobile-status{display:none} }
     </style>
+    <style>
+        :root { --v7-navy:#071426; --v7-ink:#172033; --v7-muted:#667085; --v7-blue:#2563eb; --v7-teal:#0f9f8f; --v7-border:#e4e8ef; --v7-surface:#f7f9fc; }
+        .saas-page { background:#fff; color:var(--v7-ink); }
+        .site-header { background:rgba(7,20,38,.96); backdrop-filter:blur(14px); }
+        .site-nav { width:min(94%,1280px); min-height:76px; }
+        .site-logo { display:flex; align-items:center; gap:10px; font-size:1.08rem; }
+        .site-logo::before { content:"TA"; display:grid; place-items:center; width:34px; height:34px; border-radius:10px; color:white; background:linear-gradient(135deg,#3478f6,#0fa58f); font-size:.72rem; letter-spacing:0; }
+        .site-links a { color:#b9c6d8; }
+        .launch-button { border:1px solid rgba(255,255,255,.12); background:#fff!important; color:#10213a!important; }
+        .landing-hero { min-height:620px; display:grid; place-items:center; padding:116px 0 130px; background:radial-gradient(circle at 78% 24%,rgba(21,155,143,.25),transparent 25%),radial-gradient(circle at 63% 75%,rgba(37,99,235,.22),transparent 28%),#071426; }
+        .landing-inner { width:min(92%,1280px); }
+        .landing-hero .landing-inner { text-align:center; }
+        .landing-hero h1 { max-width:900px; margin:auto; font-size:clamp(3.7rem,8vw,7rem); }
+        .landing-subtitle { font-size:clamp(1.25rem,2.2vw,1.8rem); }
+        .landing-description { max-width:720px; margin-inline:auto; }
+        .landing-actions { justify-content:center; }
+        #demo,#trust-network { display:none; }
+        #how-it-works { padding:104px 0; }
+        .steps-grid { gap:16px; }
+        .step-card { border-color:var(--v7-border); box-shadow:0 10px 30px rgba(15,35,65,.05); }
+        .product-shell { display:grid; grid-template-columns:250px minmax(0,1fr); min-height:860px; border-top:1px solid var(--v7-border); background:var(--v7-surface); }
+        .product-sidebar { position:sticky; top:76px; height:calc(100vh - 76px); padding:28px 18px; border-right:1px solid var(--v7-border); background:#fff; }
+        .sidebar-label { margin:0 12px 16px; color:#98a2b3; font-size:.7rem; font-weight:850; letter-spacing:.11em; text-transform:uppercase; }
+        .side-nav { display:grid; gap:5px; }
+        .side-link { min-height:44px; display:flex; align-items:center; gap:11px; padding:0 13px; border:0; border-radius:10px; box-shadow:none; color:#475467; background:transparent; font-size:.9rem; font-weight:750; text-align:left; }
+        .side-link:hover,.side-link.active { color:#174ea6; background:#edf4ff; }
+        .side-icon { width:25px; color:#667085; font-size:.86rem; text-align:center; }
+        .sidebar-card { margin-top:30px; padding:17px; border:1px solid #dbe9e6; border-radius:14px; background:#f2faf8; }
+        .sidebar-card strong { display:block; color:#126d61; font-size:.86rem; }
+        .sidebar-card span { display:block; margin-top:5px; color:#5b756f; font-size:.76rem; }
+        .product-main { min-width:0; padding:46px clamp(24px,4vw,64px) 72px; }
+        .app-page { display:none; max-width:1180px; margin:auto; }
+        .app-page.active { display:block; animation:page-in .25s ease; }
+        @keyframes page-in { from { opacity:0; transform:translateY(5px); } }
+        .page-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:28px; }
+        .page-heading h2 { margin:0; color:#101828; font-size:clamp(1.8rem,3vw,2.35rem); letter-spacing:-.045em; }
+        .page-heading p { margin:7px 0 0; color:var(--v7-muted); }
+        .page-action { display:inline-flex; min-height:42px; align-items:center; padding:0 15px; border-radius:9px; color:white; background:var(--v7-blue); text-decoration:none; font-size:.86rem; font-weight:800; }
+        .metric-grid-v7 { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+        .metric-v7 { min-width:0; padding:20px; border:1px solid var(--v7-border); border-radius:15px; background:#fff; box-shadow:0 5px 18px rgba(16,24,40,.035); }
+        .metric-v7 span { color:var(--v7-muted); font-size:.78rem; font-weight:750; }
+        .metric-v7 strong { display:block; margin-top:8px; color:#101828; font-size:1.7rem; letter-spacing:-.04em; }
+        .metric-change { margin-top:10px; color:#087f6d!important; font-size:.72rem!important; }
+        .dashboard-grid { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr); gap:18px; margin-top:18px; }
+        .panel-v7 { min-width:0; padding:24px; border:1px solid var(--v7-border); border-radius:16px; background:#fff; box-shadow:0 5px 18px rgba(16,24,40,.035); }
+        .panel-head { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px; }
+        .panel-head h3 { margin:0; color:#101828; font-size:1rem; }
+        .panel-head span { color:#98a2b3; font-size:.76rem; }
+        .bar-chart { height:230px; display:flex; align-items:flex-end; gap:clamp(8px,2vw,20px); padding:20px 4px 30px; border-bottom:1px solid #e7ebf1; background:repeating-linear-gradient(to top,#fff 0,#fff 54px,#f0f3f7 55px); }
+        .bar { position:relative; flex:1; min-width:16px; border-radius:6px 6px 2px 2px; background:linear-gradient(180deg,#3478f6,#215bc8); }
+        .bar::after { content:attr(data-month); position:absolute; top:calc(100% + 9px); left:50%; transform:translateX(-50%); color:#98a2b3; font-size:.68rem; }
+        .score-chart { width:100%; height:auto; overflow:visible; }
+        .activity-host .saas-card,.route-host .saas-card,.passport-host .saas-card,.dispute-host .saas-card,.trade-host .saas-card,.decision-host .saas-card { padding:0; border:0; box-shadow:none; }
+        .activity-host .event-list { max-height:310px; overflow:auto; }
+        .app-page .saas-card h2,.app-page .saas-card h3 { font-size:1.15rem; }
+        .split-page { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr); gap:18px; }
+        .escrow-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+        .escrow-grid .metric-v7 { padding:24px; }
+        .status-line { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:16px 0; border-bottom:1px solid #edf0f4; }
+        .status-line:last-child { border-bottom:0; }
+        .status-line span { color:var(--v7-muted); }
+        .status-line strong { color:#101828; }
+        .analytics-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+        .dashboard-footer { padding:28px; border-top:1px solid var(--v7-border); color:#667085; background:#fff; text-align:center; font-size:.82rem; }
+        .saas-page > footer { display:none; }
+        @media(max-width:1040px){ .metric-grid-v7{grid-template-columns:repeat(2,1fr)} .dashboard-grid,.split-page{grid-template-columns:1fr} }
+        @media(max-width:820px){ .product-shell{display:block}.product-sidebar{position:sticky;top:76px;z-index:10;width:100%;height:auto;padding:10px 16px;border-right:0;border-bottom:1px solid var(--v7-border);overflow-x:auto}.sidebar-label,.sidebar-card{display:none}.side-nav{display:flex;min-width:max-content}.side-link{white-space:nowrap}.product-main{padding:34px 20px 56px}.analytics-grid{grid-template-columns:1fr} }
+        @media(max-width:620px){ .landing-hero{min-height:540px;padding:84px 0 96px}.landing-hero h1{font-size:3.7rem}.site-links a:not(.launch-button){display:none}.mobile-status{display:none}.metric-grid-v7,.escrow-grid{grid-template-columns:1fr}.page-heading{align-items:flex-start;flex-direction:column}.product-main{padding-inline:14px}.panel-v7{padding:19px}.metric-v7{padding:18px} }
+    </style>
 </head>
 <body class="saas-page">
 
@@ -171,11 +240,11 @@
     <nav class="site-nav" aria-label="Main navigation">
         <a class="site-logo" href="#home">Trust Africa</a>
         <div class="site-links">
-            <a href="#home">Home</a>
-            <a href="#how-it-works">How It Works</a>
-            <a href="#trust-network">Trust Network</a>
+            <a href="#home">Platform</a>
+            <a href="#how-it-works">How it works</a>
+            <a href="#product-app">Product</a>
             <a href="../docs/genlayer-integration.md">Documentation</a>
-            <a class="launch-button" href="#demo">Launch Demo</a>
+            <a class="launch-button" href="#product-app" data-open-page="overview">Open dashboard</a>
         </div>
         <span class="mobile-status" id="status">Connecting</span>
     </nav>
@@ -187,8 +256,8 @@
         <p class="landing-subtitle">AI-powered trust for African commerce.</p>
         <p class="landing-description">Trust Africa helps businesses trade safely using intelligent trust scoring, autonomous dispute resolution, business trust passports, and AI-controlled escrow decisions.</p>
         <div class="landing-actions">
-            <a class="landing-button primary" href="#create-trade">Create Protected Trade</a>
-            <a class="landing-button secondary" href="#passports">View Trust Passport</a>
+            <a class="landing-button primary" href="#product-app" data-open-page="trade-center">Create protected trade</a>
+            <a class="landing-button secondary" href="#product-app" data-open-page="overview">Explore the platform</a>
         </div>
     </div>
 </section>
@@ -290,14 +359,144 @@
         </div>
     </section>
 
+    <section class="product-shell" id="product-app" aria-label="Trust Africa product workspace">
+        <aside class="product-sidebar">
+            <p class="sidebar-label">Workspace</p>
+            <nav class="side-nav" aria-label="Dashboard navigation">
+                <button class="side-link active" type="button" data-page="overview"><span class="side-icon">01</span>Overview</button>
+                <button class="side-link" type="button" data-page="trade-center"><span class="side-icon">02</span>Trade Center</button>
+                <button class="side-link" type="button" data-page="trust-passports"><span class="side-icon">03</span>Trust Passports</button>
+                <button class="side-link" type="button" data-page="ai-decisions"><span class="side-icon">04</span>AI Decisions</button>
+                <button class="side-link" type="button" data-page="escrow"><span class="side-icon">05</span>Escrow</button>
+                <button class="side-link" type="button" data-page="disputes"><span class="side-icon">06</span>Disputes</button>
+                <button class="side-link" type="button" data-page="analytics"><span class="side-icon">07</span>Analytics</button>
+            </nav>
+            <div class="sidebar-card"><strong>Trust network online</strong><span>Autonomous decisions and protected settlement are operational.</span></div>
+        </aside>
+
+        <div class="product-main">
+            <section class="app-page active" id="page-overview">
+                <div class="page-heading"><div><h2>Good morning</h2><p>A clear view of protected commerce across your trust network.</p></div><a class="page-action" href="#product-app" data-open-page="trade-center">New protected trade</a></div>
+                <div class="metric-grid-v7">
+                    <article class="metric-v7"><span>Verified trade volume</span><strong data-metric-host="heroTradeVolume">0.00</strong><span class="metric-change">+12.4% this month</span></article>
+                    <article class="metric-v7"><span>Protected escrow value</span><strong data-metric-host="heroProtectedFunds">0.00</strong><span class="metric-change">Across active settlements</span></article>
+                    <article class="metric-v7"><span>Verified trades</span><strong data-metric-host="heroVerifiedTrades">0</strong><span class="metric-change">Trusted counterparties</span></article>
+                    <article class="metric-v7"><span>AI decisions processed</span><strong data-metric-host="aiDecisionsProcessed">0</strong><span class="metric-change">Autonomous adjudication</span></article>
+                </div>
+                <div class="dashboard-grid">
+                    <article class="panel-v7"><div class="panel-head"><h3>Trade volume</h3><span>Last 7 months</span></div><div class="bar-chart" role="img" aria-label="Trade volume rose steadily over seven months"><span class="bar" style="height:38%" data-month="Dec"></span><span class="bar" style="height:49%" data-month="Jan"></span><span class="bar" style="height:43%" data-month="Feb"></span><span class="bar" style="height:64%" data-month="Mar"></span><span class="bar" style="height:58%" data-month="Apr"></span><span class="bar" style="height:78%" data-month="May"></span><span class="bar" style="height:91%" data-month="Jun"></span></div></article>
+                    <article class="panel-v7 activity-host" id="overviewActivity"><div class="panel-head"><h3>Recent activity</h3><span>Live network events</span></div></article>
+                </div>
+            </section>
+
+            <section class="app-page" id="page-trade-center">
+                <div class="page-heading"><div><h2>Trade Center</h2><p>Create and protect a cross-border transaction in one workflow.</p></div></div>
+                <div class="panel-v7 trade-host" id="tradeCenterHost"></div>
+            </section>
+
+            <section class="app-page" id="page-trust-passports">
+                <div class="page-heading"><div><h2>Trust Passports</h2><p>Portable business reputation built from verified performance.</p></div></div>
+                <div class="panel-v7 passport-host" id="passportHost"></div>
+            </section>
+
+            <section class="app-page" id="page-ai-decisions">
+                <div class="page-heading"><div><h2>AI Decisions</h2><p>Transparent adjudication for each protected transaction.</p></div></div>
+                <div class="split-page"><div class="panel-v7 decision-host" id="decisionHost"></div><article class="panel-v7"><div class="panel-head"><h3>Decision history</h3><span>Most recent</span></div><ul id="recentDecisions" class="decision-list"></ul></article></div>
+            </section>
+
+            <section class="app-page" id="page-escrow">
+                <div class="page-heading"><div><h2>Escrow</h2><p>Settlement controls aligned to autonomous trust decisions.</p></div></div>
+                <div class="escrow-grid">
+                    <article class="metric-v7"><span>Funds released</span><strong data-mirror="fundsReleased">0.00</strong><span class="metric-change">Approved settlements</span></article>
+                    <article class="metric-v7"><span>Funds refunded</span><strong data-mirror="fundsRefunded">0.00</strong><span class="metric-change">Buyer protection</span></article>
+                    <article class="metric-v7"><span>Funds held</span><strong data-mirror="fundsHeld">0.00</strong><span class="metric-change">Pending review</span></article>
+                </div>
+                <article class="panel-v7" style="margin-top:18px"><div class="panel-head"><h3>Settlement status</h3><span>Decision-controlled escrow</span></div><div class="status-line"><span>Current funds status</span><strong data-mirror="escrowFundsStatus">Loading</strong></div><div class="status-line"><span>Release condition</span><strong data-mirror="escrowReleaseCondition">Loading</strong></div><div class="status-line"><span>AI escrow decision</span><strong data-mirror="escrowDecision">Loading</strong></div></article>
+            </section>
+
+            <section class="app-page" id="page-disputes">
+                <div class="page-heading"><div><h2>Disputes</h2><p>Resolve claims with structured evidence and explainable outcomes.</p></div></div>
+                <div class="panel-v7 dispute-host" id="disputeHost"></div>
+            </section>
+
+            <section class="app-page" id="page-analytics">
+                <div class="page-heading"><div><h2>Analytics</h2><p>Monitor trust quality and cross-border commercial activity.</p></div></div>
+                <div class="analytics-grid">
+                    <article class="panel-v7"><div class="panel-head"><h3>Trust score trend</h3><span>Network average</span></div><svg class="score-chart" viewBox="0 0 560 240" role="img" aria-label="Trust score increased from 82 to 92"><defs><linearGradient id="scoreArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2563eb" stop-opacity=".22"/><stop offset="1" stop-color="#2563eb" stop-opacity="0"/></linearGradient></defs><path d="M20 190 L105 170 L190 176 L275 128 L360 138 L445 86 L540 58 L540 220 L20 220 Z" fill="url(#scoreArea)"/><path d="M20 190 L105 170 L190 176 L275 128 L360 138 L445 86 L540 58" fill="none" stroke="#2563eb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><g fill="#2563eb"><circle cx="20" cy="190" r="5"/><circle cx="105" cy="170" r="5"/><circle cx="190" cy="176" r="5"/><circle cx="275" cy="128" r="5"/><circle cx="360" cy="138" r="5"/><circle cx="445" cy="86" r="5"/><circle cx="540" cy="58" r="5"/></g></svg></article>
+                    <article class="panel-v7"><div class="panel-head"><h3>Trust performance</h3><span>Current period</span></div><div class="status-line"><span>Network trust score</span><strong data-metric-host="heroTrustScore">0%</strong></div><div class="status-line"><span>Approval rate</span><strong>86.4%</strong></div><div class="status-line"><span>Average decision time</span><strong>1.8 sec</strong></div><div class="status-line"><span>Dispute resolution rate</span><strong>94.2%</strong></div></article>
+                    <article class="panel-v7 route-host" id="routeHost" style="grid-column:1/-1"></article>
+                </div>
+            </section>
+        </div>
+    </section>
+    <div class="dashboard-footer">Trust Africa &mdash; intelligent trust infrastructure for African commerce.</div>
+
     <div class="compatibility-targets" aria-hidden="true">
         <span id="marketplace"></span><span id="trade"></span><span id="fraudCheck"></span><span id="riskDashboard"></span>
         <span id="escrowDashboard"></span><span id="platformStatistics"></span><span id="heroTradeVolume"></span><span id="heroProtectedFunds"></span>
-        <span id="heroVerifiedTrades"></span><span id="aiDecisionsProcessed"></span><span id="heroTrustScore"></span><ul id="recentDecisions"></ul>
+        <span id="heroVerifiedTrades"></span><span id="aiDecisionsProcessed"></span><span id="heroTrustScore"></span>
     </div>
 </main>
 
 <footer>Trust Africa &mdash; AI-powered trust infrastructure for African commerce.</footer>
+
+<script>
+(() => {
+    const move = (elementId, hostId) => {
+        const element = document.getElementById(elementId);
+        const host = document.getElementById(hostId);
+        if (element && host) host.appendChild(element);
+    };
+
+    move("create-trade", "tradeCenterHost");
+    move("trust-ai", "decisionHost");
+    move("passports", "passportHost");
+    move("disputes", "disputeHost");
+    move("tradeHistory", "overviewActivity");
+
+    const routeHost = document.getElementById("routeHost");
+    const routeActivity = document.getElementById("routeActivity");
+    if (routeHost && routeActivity) {
+        routeHost.innerHTML = '<div class="panel-head"><h3>Cross-border trade activity</h3><span>Active corridors</span></div>';
+        routeHost.appendChild(routeActivity);
+    }
+
+    document.querySelectorAll("[data-metric-host]").forEach(host => {
+        const metric = document.getElementById(host.dataset.metricHost);
+        if (metric) {
+            metric.classList.add("metric-live");
+            host.replaceChildren(metric);
+        }
+    });
+
+    const syncMirror = sourceId => {
+        const source = document.getElementById(sourceId);
+        if (!source) return;
+        document.querySelectorAll('[data-mirror="' + sourceId + '"]').forEach(target => {
+            target.textContent = source.textContent;
+        });
+    };
+
+    ["fundsReleased", "fundsRefunded", "fundsHeld", "escrowFundsStatus", "escrowReleaseCondition", "escrowDecision"].forEach(sourceId => {
+        syncMirror(sourceId);
+        const source = document.getElementById(sourceId);
+        if (source) new MutationObserver(() => syncMirror(sourceId)).observe(source, { childList:true, characterData:true, subtree:true });
+    });
+
+    const showPage = pageName => {
+        document.querySelectorAll(".app-page").forEach(page => page.classList.toggle("active", page.id === "page-" + pageName));
+        document.querySelectorAll(".side-link").forEach(link => {
+            const selected = link.dataset.page === pageName;
+            link.classList.toggle("active", selected);
+            link.setAttribute("aria-current", selected ? "page" : "false");
+        });
+    };
+
+    document.querySelectorAll("[data-page]").forEach(link => link.addEventListener("click", () => showPage(link.dataset.page)));
+    document.querySelectorAll("[data-open-page]").forEach(link => link.addEventListener("click", () => showPage(link.dataset.openPage)));
+    showPage("overview");
+})();
+</script>
 
 <script>
 let riskMetrics = null;
