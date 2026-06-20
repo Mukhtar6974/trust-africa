@@ -1,4 +1,4 @@
-# Trust Africa V6
+# Trust Africa
 
 **GenLayer-native intelligent trust infrastructure for African commerce.**
 
@@ -118,6 +118,23 @@ The production-pinned contract is at `contracts/trust_africa_intelligent_contrac
 
 The contract pins `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6` and contains no local-only runner aliases.
 
+## Why GenLayer
+
+Trust Africa uses GenLayer intelligent contracts to evaluate commercial evidence that cannot be resolved by simple deterministic rules alone. The AI Trade Judge analyzes the submitted evidence and returns one of three explainable outcomes: `APPROVED`, `REJECTED`, or `REVIEW_REQUIRED`.
+
+That decision drives the wider trust workflow. Escrow can autonomously release funds, refund the buyer, or hold settlement for review. Business Trust Passports then update over time as verified trades, successful deliveries, disputes, and fraud signals build a portable reputation history.
+
+## Demo Workflow
+
+```text
+Create Protected Trade
+        → Submit Evidence
+        → AI Trade Judge
+        → Trust Certificate
+        → Escrow Release / Refund / Hold
+        → Trust Passport Update
+```
+
 ## API
 
 | Endpoint | Purpose |
@@ -159,21 +176,23 @@ The repository includes an earlier dashboard screenshot at [Screenshot 2026-06-1
 
 ## Future Roadmap
 
-- Comparative GenLayer validator for subjective document interpretation
-- On-chain passport discovery and portable business identity
-- Appeals and multi-round commercial arbitration
-- Stablecoin escrow settlement
-- Regional compliance and logistics-oracle integrations
-- Production indexer for accepted/finalized GenLayer events
+- Real GenLayer deployment
+- Wallet connection
+- USDC escrow
+- Business verification
+- Document upload
+- Courier and tracking API verification
+- Multi-agent AI dispute council
 
-## Submission Demo Highlights
+## Submission Highlights
 
-- **AI Trade Judge** — evaluates trade evidence and returns an explainable approval, rejection, or review decision.
-- **Trust Passport** — gives businesses a portable reputation profile based on verified commercial performance.
-- **Autonomous Escrow** — releases, refunds, or holds protected funds according to the trust decision.
-- **Evidence-Based Dispute Resolution** — compares buyer claims, seller responses, and supporting evidence.
-- **Cross-Border Trade Intelligence** — presents protected trade activity across major African commerce corridors.
-- **GenLayer Intelligent Contract** — aligns trade validation, reputation, escrow, and dispute workflows with autonomous intelligent-contract decisions.
+- GenLayer Intelligent Contract
+- AI Trade Judge
+- Autonomous Escrow
+- Evidence-Based Dispute Resolution
+- Dynamic Trust Passports
+- Cross-Border Trade Intelligence
+- Professional SaaS Frontend
 
 ## License
 
