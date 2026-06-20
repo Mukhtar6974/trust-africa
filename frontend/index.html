@@ -113,7 +113,7 @@
         .landing-heading { max-width:680px; margin:0 auto 42px; text-align:center; }
         .landing-heading h2 { margin:0; color:#0a1f44; font-size:clamp(2rem,4vw,2.8rem); letter-spacing:-.04em; }
         .landing-heading p { margin:12px 0 0; color:#62718a; }
-        .steps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+        .steps-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
         .step-card { padding:28px; border:1px solid #dfe6ef; border-radius:18px; background:#fff; }
         .step-number { display:grid; width:38px; height:38px; place-items:center; border-radius:11px; color:#fff; background:#1769e0; font-weight:900; }
         .step-card h3 { margin:18px 0 7px; color:#0a1f44; }
@@ -131,20 +131,38 @@
         .result-row { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; padding:16px; border-radius:12px; background:#f5f8fc; }
         .result-row span:first-child { color:#63728a; font-size:.88rem; }
         .result-row strong,.result-row span:last-child { color:#0a1f44; text-align:right; font-weight:850; }
-        .secondary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; align-items:start; }
+        .escrow-totals { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:14px; }
+        .escrow-total { padding:12px; border:1px solid #dfe6ef; border-radius:10px; text-align:center; }
+        .escrow-total span { display:block; color:#66758d; font-size:.72rem; text-transform:uppercase; }
+        .escrow-total strong { display:block; margin-top:4px; color:#0a1f44; }
+        .secondary-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:22px; align-items:start; }
         .secondary-grid .saas-card { box-shadow:none; }
         .passport-stack { display:grid; gap:10px; }
         .passport-stack .metric-row { padding:13px 14px; }
         .simple-events { max-height:440px; overflow:auto; }
         .simple-events .event-list li { align-items:flex-start; }
+        .route-v6 { display:grid; gap:10px; }
+        .route-v6 .route { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+        .route-v6 .route strong { margin:0; }
+        .passport-summary { display:grid; gap:10px; }
+        .passport-title { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        .passport-title strong { color:#0a1f44; }
         .contact-strip { padding:58px 0; color:#fff; background:#0a1f44; }
         .contact-strip .landing-inner { display:flex; align-items:center; justify-content:space-between; gap:30px; }
         .contact-strip h2 { margin:0; }
         .contact-strip p { margin:6px 0 0; color:#afc1d9; }
         .compatibility-targets { display:none!important; }
+        .advanced-tools { width:min(92%,1160px); margin:0 auto 80px; border:1px solid #dfe6ef; border-radius:16px; background:#fff; }
+        .advanced-tools > summary { padding:18px 22px; color:#0a1f44; font-weight:850; cursor:pointer; list-style:none; }
+        .advanced-tools > summary::after { content:"+"; float:right; color:#1769e0; font-size:1.2rem; }
+        .advanced-tools[open] > summary::after { content:"−"; }
+        .advanced-tools .landing-inner { width:auto; padding:0 22px 24px; }
+        .advanced-tools .landing-heading { margin-bottom:24px; text-align:left; }
+        .advanced-tools .landing-heading h2 { font-size:1.4rem; }
+        .landing-section.alt { background:#fff; border-top:1px solid #edf1f6; border-bottom:1px solid #edf1f6; }
         .saas-page footer { background:#06142d; }
-        @media(max-width:920px){ .site-nav{flex-wrap:wrap;padding:12px 0}.site-links{order:3;width:100%;gap:16px;overflow-x:auto;padding-bottom:4px}.site-links a{white-space:nowrap}.demo-grid,.secondary-grid{grid-template-columns:1fr}.steps-grid{grid-template-columns:1fr}.landing-section{padding:70px 0}.contact-strip .landing-inner{align-items:flex-start;flex-direction:column} }
-        @media(max-width:620px){ .site-nav{min-height:64px}.landing-hero{padding:74px 0 86px}.landing-actions{display:grid}.landing-button{width:100%}.saas-card{padding:22px}.form-grid{grid-template-columns:1fr}.landing-section{padding:58px 0}.result-row{flex-direction:column;gap:5px}.result-row strong,.result-row span:last-child{text-align:left}.mobile-status{display:none} }
+        @media(max-width:920px){ .site-nav{flex-wrap:wrap;padding:12px 0}.site-links{order:3;width:100%;gap:16px;overflow-x:auto;padding-bottom:4px}.site-links a{white-space:nowrap}.demo-grid,.secondary-grid{grid-template-columns:1fr}.steps-grid{grid-template-columns:repeat(2,1fr)}.landing-section{padding:70px 0}.contact-strip .landing-inner{align-items:flex-start;flex-direction:column} }
+        @media(max-width:620px){ .site-nav{min-height:64px}.landing-hero{padding:74px 0 86px}.landing-actions{display:grid}.landing-button{width:100%}.saas-card{padding:22px}.form-grid,.steps-grid{grid-template-columns:1fr}.landing-section{padding:58px 0}.result-row{flex-direction:column;gap:5px}.result-row strong,.result-row span:last-child{text-align:left}.escrow-totals{grid-template-columns:1fr}.mobile-status{display:none} }
     </style>
 </head>
 <body class="saas-page">
@@ -154,10 +172,9 @@
         <a class="site-logo" href="#home">Trust Africa</a>
         <div class="site-links">
             <a href="#home">Home</a>
-            <a href="#how-it-works">How it Works</a>
-            <a href="#create-trade">Create Trade</a>
-            <a href="#trust-ai">Trust AI</a>
-            <a href="#contact">Contact</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="#trust-network">Trust Network</a>
+            <a href="../docs/genlayer-integration.md">Documentation</a>
             <a class="launch-button" href="#demo">Launch Demo</a>
         </div>
         <span class="mobile-status" id="status">Connecting</span>
@@ -167,11 +184,11 @@
 <section class="landing-hero">
     <div class="landing-inner">
         <h1>Trust Africa</h1>
-        <p class="landing-subtitle">AI-powered trust infrastructure for African commerce.</p>
-        <p class="landing-description">Protect cross-border transactions with AI trust scoring, escrow protection, dispute resolution, and business trust passports.</p>
+        <p class="landing-subtitle">AI-powered trust for African commerce.</p>
+        <p class="landing-description">Trust Africa helps businesses trade safely using intelligent trust scoring, autonomous dispute resolution, business trust passports, and AI-controlled escrow decisions.</p>
         <div class="landing-actions">
             <a class="landing-button primary" href="#create-trade">Create Protected Trade</a>
-            <a class="landing-button secondary" href="#trust-ai">View AI Decision</a>
+            <a class="landing-button secondary" href="#passports">View Trust Passport</a>
         </div>
     </div>
 </section>
@@ -179,44 +196,50 @@
 <main>
     <section class="landing-section" id="how-it-works">
         <div class="landing-inner">
-            <div class="landing-heading"><h2>How it works</h2><p>Three steps from trade creation to an explainable trust decision.</p></div>
+            <div class="landing-heading"><h2>How it works</h2><p>From agreement to autonomous settlement.</p></div>
             <div class="steps-grid">
-                <article class="step-card"><span class="step-number">1</span><h3>Create Trade</h3><p>Add the buyer, seller, service, and protected trade value.</p></article>
-                <article class="step-card"><span class="step-number">2</span><h3>Submit Evidence</h3><p>Provide an invoice, receipt, tracking record, or delivery proof.</p></article>
-                <article class="step-card"><span class="step-number">3</span><h3>AI Trust Decision</h3><p>Receive a clear decision, risk level, confidence, and escrow status.</p></article>
+                <article class="step-card"><span class="step-number">1</span><h3>Create Trade</h3><p>Add the businesses and trade value.</p></article>
+                <article class="step-card"><span class="step-number">2</span><h3>Submit Evidence</h3><p>Add a receipt, invoice, or delivery proof.</p></article>
+                <article class="step-card"><span class="step-number">3</span><h3>AI Trust Decision</h3><p>Get a clear trust result.</p></article>
+                <article class="step-card"><span class="step-number">4</span><h3>Escrow Release or Refund</h3><p>Settle funds from the final decision.</p></article>
             </div>
         </div>
     </section>
 
     <section class="landing-section alt" id="demo">
         <div class="landing-inner">
-            <div class="landing-heading"><h2>Protected trade demo</h2><p>Run a trust check without navigating a complex dashboard.</p></div>
+            <div class="landing-heading"><h2>Create Protected Trade</h2><p>Run an AI trust check.</p></div>
             <div class="demo-grid">
             <article class="saas-card" id="create-trade">
                 <h2>Create Protected Trade</h2>
-                <p class="card-kicker">Submit the transaction and proof for an AI trust check.</p>
+                <p class="card-kicker">Enter the trade details.</p>
                 <form class="saas-form" id="tradeForm" onsubmit="submitTrade(event)">
                     <div class="form-grid">
                         <div class="field"><label for="buyerName">Buyer Business</label><input id="buyerName" name="buyer" type="text" placeholder="Accra Retail Partners" required></div>
                         <div class="field"><label for="sellerName">Seller Business</label><input id="sellerName" name="seller" type="text" placeholder="Lagos Textile Export Ltd" required></div>
-                        <div class="field"><label for="productName">Product or Service</label><input id="productName" name="product" type="text" placeholder="Premium textile consignment" required></div>
+                        <div class="field"><label for="productName">Product</label><input id="productName" name="product" type="text" placeholder="Premium textile consignment" required></div>
                         <div class="field"><label for="tradeAmount">Trade Value</label><input id="tradeAmount" name="amount" type="number" min="0.01" step="0.01" placeholder="25000" required></div>
-                        <div class="field field-full"><label for="tradeEvidence">Evidence / Proof</label><textarea id="tradeEvidence" name="evidence" placeholder="Invoice, receipt, tracking, or delivery confirmation" required></textarea></div>
+                        <div class="field field-full"><label for="tradeEvidence">Evidence</label><textarea id="tradeEvidence" name="evidence" placeholder="Invoice, receipt, tracking, or delivery proof" required></textarea></div>
                     </div>
-                    <button type="submit">Run AI Trust Check</button>
+                    <button type="submit">Run AI Trust Decision</button>
                 </form>
                 <p class="result-message" id="newTrade" aria-live="polite"></p>
             </article>
 
             <article class="saas-card" id="trust-ai">
-                <h2>AI Trust Decision</h2>
-                <p class="card-kicker">The trust result appears here after submission.</p>
+                <h2>AI Decision</h2>
+                <p class="card-kicker">Your result appears here.</p>
                 <div class="result-grid">
                     <div class="result-row"><span>Decision</span><span id="judgeDecision" class="judge-badge">AWAITING TRADE</span></div>
-                    <div class="result-row"><span>Risk Level</span><strong id="judgeRisk">—</strong></div>
                     <div class="result-row"><span>Confidence</span><strong id="judgeConfidence">—</strong></div>
-                    <div class="result-row"><span>Trust Certificate</span><strong id="trustCertificate">PENDING</strong></div>
+                    <div class="result-row"><span>Risk Level</span><strong id="judgeRisk">—</strong></div>
+                    <div class="result-row"><span>Certificate Status</span><strong id="trustCertificate">PENDING</strong></div>
                     <div class="result-row"><span>Escrow Status</span><strong id="escrowFundsStatus">Loading</strong></div>
+                </div>
+                <div class="escrow-totals" aria-label="Escrow totals">
+                    <div class="escrow-total"><span>Released</span><strong id="fundsReleased">0</strong></div>
+                    <div class="escrow-total"><span>Refunded</span><strong id="fundsRefunded">0</strong></div>
+                    <div class="escrow-total"><span>Held</span><strong id="fundsHeld">0</strong></div>
                 </div>
                 <span class="sr-only" id="judgeReason">Submit a trade for analysis</span>
                 <span class="sr-only" id="trustAnalysis">No active decision.</span>
@@ -229,15 +252,14 @@
         </div>
     </section>
 
-    <section class="landing-section" id="secondary">
+    <section class="landing-section" id="trust-network">
         <div class="landing-inner">
-        <div class="landing-heading"><h2>Trust operations</h2><p>Reputation, activity, and dispute tools—kept below the primary trade flow.</p></div>
+        <div class="landing-heading"><h2>Intelligent trust network</h2><p>Passports, events, disputes, and live trade corridors.</p></div>
         <div class="secondary-grid">
-            <article class="saas-card">
+            <article class="saas-card" id="passports">
                 <h3>Business Trust Passport</h3>
                 <p class="card-kicker">Verified reputation for professional counterparties.</p>
-                <div class="passport-stack" id="reputation"><div class="metric-row"><span>Buyer Trust Score</span><strong>Loading</strong></div><div class="metric-row"><span>Seller Trust Score</span><strong>Loading</strong></div></div>
-                <div class="metric-row" style="margin-top:10px"><span>Passport Status</span><strong>VERIFIED</strong></div>
+                <div class="passport-stack" id="reputation"><div class="metric-row"><span>Trust passports</span><strong>Loading</strong></div></div>
             </article>
 
             <article class="saas-card" id="disputes">
@@ -247,6 +269,7 @@
                 <form id="disputeForm" onsubmit="submitDispute(event)">
                     <div class="field"><label for="buyerClaim">Buyer Claim</label><textarea id="buyerClaim" name="buyer_claim" required></textarea></div>
                     <div class="field"><label for="sellerResponse">Seller Response</label><textarea id="sellerResponse" name="seller_response" required></textarea></div>
+                    <div class="field"><label for="disputeEvidence">Evidence</label><textarea id="disputeEvidence" name="evidence" required></textarea></div>
                     <button type="submit">Submit Dispute</button>
                 </form>
                 <p class="result-message" id="disputeResult" aria-live="polite"></p>
@@ -257,12 +280,14 @@
                 <p class="card-kicker">Latest verified network activity.</p>
                 <ul id="tradeHistory" class="event-list"></ul>
             </article>
-        </div>
-        </div>
-    </section>
 
-    <section class="contact-strip" id="contact">
-        <div class="landing-inner"><div><h2>Build trusted African commerce</h2><p>Use the demo to explore protected trades, AI decisions, and dispute resolution.</p></div><a class="landing-button primary" href="#demo">Launch Demo</a></div>
+            <article class="saas-card">
+                <h3>Cross-Border Trade Activity</h3>
+                <p class="card-kicker">Active commerce corridors.</p>
+                <div class="route-v6" id="routeActivity"><div class="route"><strong>Loading routes</strong></div></div>
+            </article>
+        </div>
+        </div>
     </section>
 
     <div class="compatibility-targets" aria-hidden="true">
@@ -307,6 +332,13 @@ function renderEscrowDashboard() {
         "Total Locked Funds: " + formatAmount(escrowMetrics.locked) +
         " | Total Released Funds: " + formatAmount(escrowMetrics.released) +
         " | Total Disputed Funds: " + formatAmount(escrowMetrics.disputed);
+}
+
+function renderEscrowTotals(escrow) {
+    if (!escrow) return;
+    document.getElementById("fundsReleased").innerText = formatAmount(escrow.funds_released);
+    document.getElementById("fundsRefunded").innerText = formatAmount(escrow.funds_refunded);
+    document.getElementById("fundsHeld").innerText = formatAmount(escrow.funds_held);
 }
 
 function renderPlatformStatistics() {
@@ -377,7 +409,8 @@ function updateTradeJudge(judgment) {
     badge.className = "judge-badge " + judgment.decision.toLowerCase().replace("_", "-");
     badge.innerText = judgment.decision;
     document.getElementById("judgeRisk").innerText = judgment.risk;
-    document.getElementById("judgeConfidence").innerText = judgment.confidence;
+    document.getElementById("judgeConfidence").innerText =
+        String(judgment.confidence).includes("%") ? judgment.confidence : judgment.confidence + "%";
     document.getElementById("judgeReason").innerText = judgment.reason;
     addRecentDecision(judgment.decision);
 }
@@ -490,6 +523,7 @@ function submitTrade(event) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+            trade_id: tradeId,
             buyer: trade.buyer,
             seller: trade.seller,
             product: trade.product,
@@ -515,16 +549,17 @@ function submitTrade(event) {
         updateWorkflowMetrics(trade.amount, data);
         updateTradeJudge(data);
 
-        const fundsStatus = data.decision === "APPROVED" ? "RELEASED" : data.decision === "REJECTED" ? "DISPUTED" : "LOCKED";
+        const fundsStatus = data.escrow_status || (data.decision === "APPROVED" ? "RELEASED" : data.decision === "REJECTED" ? "REFUNDED" : "HELD");
         document.getElementById("escrowFundsStatus").innerText = fundsStatus;
-        document.getElementById("escrowReleaseCondition").innerText = "AI trust conditions satisfied";
-        document.getElementById("escrowDecision").innerText = data.decision === "APPROVED" ? "RELEASE_FUNDS" : data.decision;
+        document.getElementById("escrowReleaseCondition").innerText = "GenLayer trust consensus";
+        document.getElementById("escrowDecision").innerText = data.escrow_decision;
+        renderEscrowTotals(data.escrow);
 
         document.getElementById("newTrade").innerText =
             "Created " + tradeId + " | Decision: " + data.decision;
 
         document.getElementById("trustCertificate").innerText =
-            (data.decision === "APPROVED" ? "VERIFIED" : data.decision) + " · " + tradeId;
+            data.certificate_status;
 
         document.getElementById("trustAnalysis").innerText =
             "Trade: " + tradeId +
@@ -532,6 +567,8 @@ function submitTrade(event) {
             " | Risk: " + data.risk +
             " | Confidence: " + data.confidence +
             " | Reason: " + data.reason;
+
+        renderPassportCards([data.buyer_passport, data.seller_passport]);
 
         form.reset();
     })
@@ -560,7 +597,8 @@ function submitDispute(event) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             buyer_claim: dispute.buyer_claim,
-            seller_response: dispute.seller_response
+            seller_response: dispute.seller_response,
+            evidence: dispute.evidence
         })
     })
     .then(res => {
@@ -583,6 +621,8 @@ function submitDispute(event) {
             data.decision === "RELEASE_FUNDS" ? "RELEASED" : data.decision === "REFUND_BUYER" ? "REFUNDED" : "LOCKED";
         document.getElementById("escrowDecision").innerText = data.decision;
         addTrustEvent("Dispute Resolved", data.reason, data.decision);
+        renderPassportCards([data.buyer_passport, data.seller_passport]);
+        renderEscrowTotals(data.escrow);
 
         form.reset();
     })
@@ -594,16 +634,58 @@ function submitDispute(event) {
     });
 }
 
+function renderPassportCards(passports) {
+    const container = document.getElementById("reputation");
+    container.replaceChildren();
+    passports.filter(Boolean).slice(0, 2).forEach(passport => {
+        const card = document.createElement("div");
+        const details = document.createElement("span");
+        const name = document.createElement("strong");
+        const stats = document.createElement("span");
+        const score = document.createElement("strong");
+        card.className = "metric-row";
+        name.innerText = passport.business;
+        stats.innerText = passport.completed_trades + " completed trades · " + passport.successful_deliveries + " deliveries";
+        score.innerText = passport.trust_score + " · " + passport.verification_status;
+        details.append(name, document.createElement("br"), stats);
+        card.append(details, score);
+        container.appendChild(card);
+    });
+}
+
 function loadReputation() {
-    fetch("http://127.0.0.1:5000/reputation")
+    fetch("http://127.0.0.1:5000/trust-passports")
     .then(res => res.json())
     .then(data => {
-        document.getElementById("reputation").innerHTML =
-            "<div class='metric-row'><span>Buyer Trust Score</span><strong>Accra Retail Partners · " + data.amina_score +
-            "</strong></div><div class='metric-row'><span>Seller Trust Score</span><strong>Lagos Textile Export Ltd · " + data.kwame_score + "</strong></div>";
+        renderPassportCards(data.passports);
     });
 }
 loadReputation();
+
+fetch("http://127.0.0.1:5000/cross-border-activity")
+.then(res => res.json())
+.then(data => {
+    const container = document.getElementById("routeActivity");
+    container.replaceChildren();
+    data.routes.forEach(item => {
+        const row = document.createElement("div");
+        const route = document.createElement("strong");
+        const value = document.createElement("span");
+        row.className = "route";
+        route.innerText = item.route;
+        value.innerText = formatAmount(item.active_trade_value) + " active value";
+        row.append(route, value);
+        container.appendChild(row);
+    });
+});
+
+fetch("http://127.0.0.1:5000/trust-events")
+.then(res => res.json())
+.then(data => {
+    const history = document.getElementById("tradeHistory");
+    history.replaceChildren();
+    data.events.slice(0, 6).forEach(item => addTrustEvent(item.title, item.subject, item.status));
+});
 
 fetch("http://127.0.0.1:5000/dispute")
 .then(res => res.json())
@@ -634,7 +716,7 @@ fetch("http://127.0.0.1:5000/trust-certificate")
 .then(res => res.json())
 .then(data => {
     document.getElementById("trustCertificate").innerText =
-        data.status + " · " + data.certificate_id;
+        data.status;
 });
 
 fetch("http://127.0.0.1:5000/trust-analysis")
@@ -651,7 +733,7 @@ fetch("http://127.0.0.1:5000/contract-trust")
 .then(data => {
 
     document.getElementById("trustCertificate").innerText =
-        "Certificate: " + data.certificate_status;
+        data.certificate_status;
 
     document.getElementById("trustAnalysis").innerText =
         "Trust Score from GenLayer Contract | Risk: " +
@@ -666,13 +748,14 @@ fetch("http://127.0.0.1:5000/escrow-status")
     document.getElementById("escrowFundsStatus").innerText = data.escrow_status;
     document.getElementById("escrowReleaseCondition").innerText = data.condition;
     document.getElementById("escrowDecision").innerText = data.ai_decision;
+    renderEscrowTotals(data);
     document.getElementById("escrowStatus").innerText =
         "Status: " + data.escrow_status +
-        " | Buyer: " + data.buyer +
-        " | Seller: " + data.seller +
-        " | Amount: " + data.amount +
         " | Condition: " + data.condition +
-        " | AI Decision: " + data.ai_decision;
+        " | AI Decision: " + data.ai_decision +
+        " | Released: " + data.funds_released +
+        " | Refunded: " + data.funds_refunded +
+        " | Held: " + data.funds_held;
 });
 
 </script>
