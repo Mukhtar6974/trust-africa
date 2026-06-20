@@ -166,6 +166,15 @@ The repository includes an earlier dashboard screenshot at [Screenshot 2026-06-1
 - Regional compliance and logistics-oracle integrations
 - Production indexer for accepted/finalized GenLayer events
 
+## Submission Demo Highlights
+
+- **AI Trade Judge** — evaluates trade evidence and returns an explainable approval, rejection, or review decision.
+- **Trust Passport** — gives businesses a portable reputation profile based on verified commercial performance.
+- **Autonomous Escrow** — releases, refunds, or holds protected funds according to the trust decision.
+- **Evidence-Based Dispute Resolution** — compares buyer claims, seller responses, and supporting evidence.
+- **Cross-Border Trade Intelligence** — presents protected trade activity across major African commerce corridors.
+- **GenLayer Intelligent Contract** — aligns trade validation, reputation, escrow, and dispute workflows with autonomous intelligent-contract decisions.
+
 ## License
 
 MIT
