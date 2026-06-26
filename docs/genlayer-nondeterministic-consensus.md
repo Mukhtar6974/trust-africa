@@ -54,46 +54,65 @@ Each call follows the GenLayer consensus pattern:
 3. The result is accepted on-chain only if a validator majority agrees on the
    **decision category** (not exact wording).
 
-## Where Non-Deterministic Consensus Is Used
+## How the Equivalence Principle Is Applied
 
-### `validate_trade()` → `_ai_evaluate_trade()`
+All three decision functions now use `gl.eq_principle.prompt_comparative`, the official
+GenLayer Equivalence Principle convenience wrapper for comparative consensus.
 
-The AI receives the full trade context — buyer, seller, product, amount, and evidence —
-and returns one of: `APPROVED`, `REJECTED`, `REVIEW_REQUIRED`.
+### Pattern used in each function
 
-This is non-deterministic because:
-- The AI may phrase its reasoning differently on each run
-- Confidence scores vary by framing and model temperature
-- Contextual cues (amount vs. product type, corridor risk) affect the assessment
-- Evidence credibility is subjective and varies between evaluators
+```python
+def get_verdict():
+    raw = gl.nondet.exec_prompt(prompt, response_format="json")
+    if not isinstance(raw, dict):
+        raw = {}
+    decision = str(raw.get("decision", "REVIEW_REQUIRED")).upper().strip()
+    if decision not in {"APPROVED", "REJECTED", "REVIEW_REQUIRED"}:
+        decision = "REVIEW_REQUIRED"
+    return {
+        "decision": decision,
+        "confidence": max(0, min(100, int(raw.get("confidence", 70)))),
+        "risk": str(raw.get("risk", "MEDIUM")).upper(),
+        "reason": str(raw.get("reason", "")),
+    }
 
-### `resolve_dispute()` → `_ai_resolve_dispute()`
+verdict = gl.eq_principle.prompt_comparative(
+    get_verdict,
+    principle=(
+        "The `decision` field must be exactly the same "
+        "(APPROVED, REJECTED, or REVIEW_REQUIRED). "
+        "confidence, risk, and reason may differ."
+    ),
+)
+```
 
-The AI receives both the buyer's claim and the seller's response, plus supporting
-evidence, and returns one of: `RELEASE_FUNDS`, `REFUND_BUYER`, `MANUAL_REVIEW`.
+### `validate_trade()`
 
-This is non-deterministic because:
-- Credibility judgment depends on reading both parties holistically
-- The same "proof of delivery" may be convincing or suspicious depending on context
-- Fraud signals in claims are implicit, not keyword-searchable
-- Human-like reasoning over conflicting accounts cannot be reduced to if/else
+`get_verdict()` receives the full trade context (buyer, seller, product, amount,
+evidence) and asks the AI to return `APPROVED`, `REJECTED`, or `REVIEW_REQUIRED`.
 
-### `issue_trust_passport()` → `_ai_issue_passport()`
+The principle: **`decision` must be exactly the same.** Confidence, risk, and reason
+may differ across validators.
 
-The AI receives the business's complete trading record and returns one of:
-`VERIFIED`, `WATCHLIST`, `UNVERIFIED`.
+### `resolve_dispute()`
 
-This is non-deterministic because:
-- A trust score of 72 with 3 disputes won may warrant VERIFIED or WATCHLIST
-  depending on delivery patterns and trade volume
-- Context about corridor norms and industry risk matters
-- Static thresholds are gameable; holistic AI assessment is not
+`get_verdict()` receives the buyer's claim, seller's response, and evidence, and asks
+the AI to return `RELEASE_FUNDS`, `REFUND_BUYER`, or `MANUAL_REVIEW`.
+
+The principle: **`decision` must be exactly the same.** Reason may differ.
+
+### `issue_trust_passport()`
+
+`get_verdict()` receives the business's full trading record and asks the AI to return
+`VERIFIED`, `WATCHLIST`, or `UNVERIFIED`.
+
+The principle: **`status` must be exactly the same.** Reason may differ.
 
 ## How Validators Compare Outputs
 
-Validators use the **equivalence principle**: two results are considered equivalent if
-they share the same **decision category**, regardless of the explanation, confidence
-value, or phrasing.
+`prompt_comparative` runs `get_verdict()` independently on each validator, then sends
+both outputs to a comparison LLM with the principle string. The comparison LLM decides
+if they agree.
 
 | Leader output | Validator output | Equivalent? |
 |---|---|---|
@@ -104,17 +123,6 @@ value, or phrasing.
 | `RELEASE_FUNDS` | `REFUND_BUYER` | **No** — consensus fails, retry |
 | `VERIFIED` | `VERIFIED` | Yes |
 | `VERIFIED` | `WATCHLIST` | **No** — consensus fails, retry |
-
-The validator function for each call:
-
-```python
-def validator_fn(leaders_res: gl.vm.Result) -> bool:
-    if not isinstance(leaders_res, gl.vm.Return):
-        return self._handle_leader_error(leaders_res, leader_fn)
-    validator_result = leader_fn()
-    # Only the category is compared — not explanation, confidence, or risk level
-    return leaders_res.calldata["decision"] == validator_result["decision"]
-```
 
 ## Why Trust Africa Now Requires GenLayer
 

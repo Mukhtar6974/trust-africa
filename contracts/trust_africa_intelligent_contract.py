@@ -2,30 +2,28 @@
 
 # Trust Africa Intelligent Contract
 #
-# Core trust decisions (validate_trade, resolve_dispute, issue_trust_passport) are
-# NON-DETERMINISTIC: multiple GenLayer validators independently ask an AI to evaluate
-# the same evidence and must agree on the decision category before any state is updated.
+# Core trust decisions use the GenLayer Equivalence Principle (prompt_comparative).
+# Each decision function defines a get_verdict() callable, then calls:
 #
-# Why GenLayer is required:
-#   Evidence evaluation is inherently subjective. Two receipts can look legitimate yet
-#   differ in phrasing. Fraud signals can be implicit. A single node cannot be trusted
-#   to make these calls — consensus across independent validators prevents manipulation.
+#   gl.eq_principle.prompt_comparative(get_verdict, principle="...")
 #
-# What validators agree on:
-#   The decision CATEGORY — APPROVED, REJECTED, REVIEW_REQUIRED (trade validation);
-#   RELEASE_FUNDS, REFUND_BUYER, MANUAL_REVIEW (dispute resolution);
-#   VERIFIED, WATCHLIST, UNVERIFIED (trust passport).
-#   Validators may produce different explanations and confidence values — only the
-#   category must match for consensus to pass.
+# How it works:
+#   1. The leader validator runs get_verdict() and produces a result.
+#   2. Each subsequent validator independently reruns get_verdict().
+#   3. A comparison LLM receives both outputs and checks them against the principle.
+#   4. On-chain state only updates after a validator majority passes the comparison.
+#
+# Equivalence criteria (what validators must agree on):
+#   validate_trade     — `decision` field: APPROVED | REJECTED | REVIEW_REQUIRED
+#   resolve_dispute    — `decision` field: RELEASE_FUNDS | REFUND_BUYER | MANUAL_REVIEW
+#   issue_trust_passport — `status` field: VERIFIED | WATCHLIST | UNVERIFIED
+#
+# confidence, risk, and reason may differ across validators and are not part of
+# the consensus criteria.
 
 import json
-import re
 
 from genlayer import *
-
-ERROR_EXPECTED  = "[EXPECTED]"
-ERROR_LLM       = "[LLM_ERROR]"
-ERROR_TRANSIENT = "[TRANSIENT]"
 
 
 class TrustAfricaIntelligentCommerce(gl.Contract):
@@ -55,7 +53,7 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
         )
 
     # -------------------------------------------------------------------------
-    # Storage helpers (deterministic — no consensus needed)
+    # Storage helpers (deterministic)
     # -------------------------------------------------------------------------
 
     def _passport_json(
@@ -108,264 +106,6 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
         passport["disputes_lost"] = int(passport["disputes_lost"]) + lost_delta
         self.passports[business] = json.dumps(passport, sort_keys=True)
 
-    # -------------------------------------------------------------------------
-    # LLM response helpers
-    # -------------------------------------------------------------------------
-
-    def _clean_json(self, text) -> dict:
-        if isinstance(text, dict):
-            return text
-        first = text.find("{")
-        last = text.rfind("}")
-        if first == -1 or last == -1:
-            raise gl.vm.UserError(f"{ERROR_LLM} No JSON object in LLM response")
-        text = text[first : last + 1]
-        text = re.sub(r",(?!\s*?[\{\[\"\'\w])", "", text)
-        return json.loads(text)
-
-    def _parse_trade_verdict(self, raw) -> dict:
-        data = self._clean_json(raw) if not isinstance(raw, dict) else raw
-        if not isinstance(data, dict):
-            raise gl.vm.UserError(f"{ERROR_LLM} Non-dict LLM response: {type(data)}")
-        decision = str(data.get("decision", "")).upper().strip()
-        if decision not in {"APPROVED", "REJECTED", "REVIEW_REQUIRED"}:
-            raise gl.vm.UserError(
-                f"{ERROR_LLM} Invalid trade decision '{decision}'"
-            )
-        return {
-            "decision": decision,
-            "confidence": max(0, min(100, int(data.get("confidence", 70)))),
-            "risk": str(data.get("risk", "MEDIUM")).upper(),
-            "reason": str(data.get("reason", "")),
-        }
-
-    def _parse_dispute_verdict(self, raw) -> dict:
-        data = self._clean_json(raw) if not isinstance(raw, dict) else raw
-        if not isinstance(data, dict):
-            raise gl.vm.UserError(f"{ERROR_LLM} Non-dict LLM response: {type(data)}")
-        decision = str(data.get("decision", "")).upper().strip()
-        if decision not in {"RELEASE_FUNDS", "REFUND_BUYER", "MANUAL_REVIEW"}:
-            raise gl.vm.UserError(
-                f"{ERROR_LLM} Invalid dispute decision '{decision}'"
-            )
-        return {"decision": decision, "reason": str(data.get("reason", ""))}
-
-    def _parse_passport_verdict(self, raw) -> dict:
-        data = self._clean_json(raw) if not isinstance(raw, dict) else raw
-        if not isinstance(data, dict):
-            raise gl.vm.UserError(f"{ERROR_LLM} Non-dict LLM response: {type(data)}")
-        status = str(data.get("status", "")).upper().strip()
-        if status not in {"VERIFIED", "WATCHLIST", "UNVERIFIED"}:
-            raise gl.vm.UserError(
-                f"{ERROR_LLM} Invalid passport status '{status}'"
-            )
-        return {"status": status, "reason": str(data.get("reason", ""))}
-
-    # -------------------------------------------------------------------------
-    # Canonical error handler for validator functions
-    # -------------------------------------------------------------------------
-
-    def _handle_leader_error(self, leaders_res, leader_fn) -> bool:
-        leader_msg = getattr(leaders_res, "message", "")
-        try:
-            leader_fn()
-            return False  # leader errored but validator succeeded — disagree
-        except gl.vm.UserError as exc:
-            validator_msg = getattr(exc, "message", str(exc))
-            # Deterministic errors (business logic, LLM format) must match exactly
-            if validator_msg.startswith(ERROR_EXPECTED) or validator_msg.startswith(ERROR_LLM):
-                return validator_msg == leader_msg
-            # LLM failures: force rotation so a different validator can succeed
-            return False
-        except Exception:
-            return False
-
-    # =========================================================================
-    # NON-DETERMINISTIC CONSENSUS CALLS
-    # Each function below is the heart of why Trust Africa requires GenLayer.
-    # =========================================================================
-
-    def _ai_evaluate_trade(
-        self, buyer: str, seller: str, product: str, amount: str, evidence: str
-    ) -> dict:
-        """
-        NON-DETERMINISTIC — GenLayer validator consensus required.
-
-        Multiple independent validators each call an AI with the same trade details.
-        The contract accepts the result only when a validator majority agrees on the
-        decision CATEGORY. Validators may produce different explanations or confidence
-        values — only APPROVED / REJECTED / REVIEW_REQUIRED must match.
-
-        Allowed equivalent outputs:
-          - APPROVED   + any explanation  == APPROVED   (consensus passes)
-          - REJECTED   + any explanation  == REJECTED   (consensus passes)
-          - APPROVED   vs REJECTED        → not equivalent (consensus fails, retry)
-        """
-        prompt = f"""You are a trade verification expert for African cross-border commerce.
-
-Evaluate whether the evidence provided is sufficient to approve this trade.
-
-Trade details:
-  Buyer: {buyer}
-  Seller: {seller}
-  Product: {product}
-  Amount: {amount}
-  Evidence: {evidence}
-
-Choose exactly ONE decision:
-  APPROVED        — evidence clearly demonstrates a legitimate, completed trade
-  REJECTED        — evidence shows fraud, deception, or a clear policy violation
-  REVIEW_REQUIRED — evidence is ambiguous, incomplete, or requires further verification
-
-Consider:
-  1. Is the evidence credible and independently verifiable?
-  2. Are there fraud or misrepresentation indicators?
-  3. Does the evidence match the stated transaction details?
-  4. Is the amount reasonable for the described product and corridor?
-
-Respond with JSON only:
-{{
-  "decision": "APPROVED" | "REJECTED" | "REVIEW_REQUIRED",
-  "confidence": <integer 0-100>,
-  "risk": "LOW" | "MEDIUM" | "HIGH",
-  "reason": "<one-sentence explanation>"
-}}"""
-
-        def leader_fn():
-            raw = gl.nondet.exec_prompt(prompt, response_format="json")
-            return self._parse_trade_verdict(raw)
-
-        def validator_fn(leaders_res: gl.vm.Result) -> bool:
-            # Validator re-runs the same AI task independently, then compares
-            # only the decision category — not the explanation or confidence.
-            if not isinstance(leaders_res, gl.vm.Return):
-                return self._handle_leader_error(leaders_res, leader_fn)
-            validator_result = leader_fn()
-            return leaders_res.calldata["decision"] == validator_result["decision"]
-
-        return gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
-
-    def _ai_resolve_dispute(
-        self,
-        buyer_claim: str,
-        seller_response: str,
-        evidence: str,
-        product: str,
-        amount: str,
-    ) -> dict:
-        """
-        NON-DETERMINISTIC — GenLayer validator consensus required.
-
-        Multiple independent validators each call an AI with the full dispute record.
-        The contract accepts the result only when validators agree on the escrow
-        disposition CATEGORY. Explanations may differ; the category must match.
-
-        Allowed equivalent outputs:
-          - RELEASE_FUNDS + any explanation == RELEASE_FUNDS (consensus passes)
-          - REFUND_BUYER  + any explanation == REFUND_BUYER  (consensus passes)
-          - RELEASE_FUNDS vs REFUND_BUYER   → not equivalent (consensus fails, retry)
-        """
-        prompt = f"""You are a dispute resolution expert for African cross-border commerce.
-
-A trade dispute has been filed. Evaluate both parties and decide the correct escrow outcome.
-
-Transaction:
-  Product: {product}
-  Amount: {amount}
-
-Buyer's claim:
-  {buyer_claim}
-
-Seller's response:
-  {seller_response}
-
-Additional evidence:
-  {evidence}
-
-Choose exactly ONE decision:
-  RELEASE_FUNDS — evidence supports the seller; release escrow to seller
-  REFUND_BUYER  — evidence supports the buyer; refund escrow to buyer
-  MANUAL_REVIEW — evidence is conflicting or insufficient; requires human arbitration
-
-Consider:
-  1. Which party presents more credible and specific evidence?
-  2. Are there signs of fraud or deception on either side?
-  3. Is the seller's proof of delivery independently verifiable?
-  4. Is the buyer's complaint substantiated with specific details?
-
-Respond with JSON only:
-{{
-  "decision": "RELEASE_FUNDS" | "REFUND_BUYER" | "MANUAL_REVIEW",
-  "reason": "<one-sentence explanation>"
-}}"""
-
-        def leader_fn():
-            raw = gl.nondet.exec_prompt(prompt, response_format="json")
-            return self._parse_dispute_verdict(raw)
-
-        def validator_fn(leaders_res: gl.vm.Result) -> bool:
-            if not isinstance(leaders_res, gl.vm.Return):
-                return self._handle_leader_error(leaders_res, leader_fn)
-            validator_result = leader_fn()
-            return leaders_res.calldata["decision"] == validator_result["decision"]
-
-        return gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
-
-    def _ai_issue_passport(self, business: str, passport_data: dict) -> dict:
-        """
-        NON-DETERMINISTIC — GenLayer validator consensus required.
-
-        Multiple independent validators each call an AI with the business's trade
-        history. The contract accepts the result only when validators agree on the
-        verification STATUS. Explanations may differ; the status must match.
-
-        Allowed equivalent outputs:
-          - VERIFIED   + any explanation == VERIFIED   (consensus passes)
-          - WATCHLIST  + any explanation == WATCHLIST  (consensus passes)
-          - VERIFIED   vs WATCHLIST      → not equivalent (consensus fails, retry)
-        """
-        prompt = f"""You are a business trust verification expert for African cross-border commerce.
-
-Assess this business's trading record and assign the correct trust passport status.
-
-Business: {business}
-
-Trading history:
-  Trust Score:           {passport_data.get('trust_score', 0)} / 100
-  Completed Trades:      {passport_data.get('completed_trades', 0)}
-  Successful Deliveries: {passport_data.get('successful_deliveries', 0)}
-  Disputes Won:          {passport_data.get('disputes_won', 0)}
-  Disputes Lost:         {passport_data.get('disputes_lost', 0)}
-
-Choose exactly ONE status:
-  VERIFIED   — strong history, high trust score (≥75), low dispute rate; trusted partner
-  WATCHLIST  — mixed history, moderate score (50–74), or elevated dispute rate; monitor closely
-  UNVERIFIED — poor history, low score (<50), high dispute rate, or insufficient trading history
-
-Consider:
-  1. Overall trust score and trend
-  2. Dispute win / loss ratio
-  3. Delivery success rate relative to completed trades
-  4. Total trading experience and volume
-
-Respond with JSON only:
-{{
-  "status": "VERIFIED" | "WATCHLIST" | "UNVERIFIED",
-  "reason": "<one-sentence explanation>"
-}}"""
-
-        def leader_fn():
-            raw = gl.nondet.exec_prompt(prompt, response_format="json")
-            return self._parse_passport_verdict(raw)
-
-        def validator_fn(leaders_res: gl.vm.Result) -> bool:
-            if not isinstance(leaders_res, gl.vm.Return):
-                return self._handle_leader_error(leaders_res, leader_fn)
-            validator_result = leader_fn()
-            return leaders_res.calldata["status"] == validator_result["status"]
-
-        return gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
-
     # =========================================================================
     # Public write methods
     # =========================================================================
@@ -409,28 +149,73 @@ Respond with JSON only:
     @gl.public.write
     def validate_trade(self, trade_id: str, evidence: str) -> str:
         """
-        GenLayer consensus call — NON-DETERMINISTIC.
+        GenLayer Equivalence Principle — prompt_comparative.
 
-        Submits evidence to AI validators for independent evaluation. Each validator
-        runs the same LLM prompt and the result is accepted only when a majority
-        agrees on the decision category: APPROVED, REJECTED, or REVIEW_REQUIRED.
+        get_verdict() is run independently by each validator. A comparison LLM then
+        checks that the `decision` field matches across validators. On-chain state
+        only updates after the majority agrees.
 
-        This function cannot be replaced with deterministic keyword rules because:
-          - Evidence phrasing varies across languages and cultures
-          - Fraud signals can be subtle and contextual
-          - A single node's keyword check is trivially gameable
+        Equivalence rule: `decision` must be exactly the same.
+        APPROVED | REJECTED | REVIEW_REQUIRED — no other values accepted.
+        confidence, risk, and reason may differ and are not compared.
         """
         if trade_id not in self.trades:
             raise gl.UserError("Unknown trade")
         trade = json.loads(self.trades[trade_id])
 
-        # NON-DETERMINISTIC: AI validator consensus determines the decision
-        verdict = self._ai_evaluate_trade(
-            trade["buyer"],
-            trade["seller"],
-            trade["product"],
-            trade["amount"],
-            evidence,
+        prompt = f"""You are a trade verification expert for African cross-border commerce.
+
+Evaluate whether the evidence is sufficient to approve this trade.
+
+Trade:
+  Buyer: {trade['buyer']}
+  Seller: {trade['seller']}
+  Product: {trade['product']}
+  Amount: {trade['amount']}
+  Evidence: {evidence}
+
+Choose exactly ONE decision:
+  APPROVED        — evidence clearly demonstrates a legitimate, completed trade
+  REJECTED        — evidence shows fraud, deception, or a clear policy violation
+  REVIEW_REQUIRED — evidence is ambiguous, incomplete, or requires further verification
+
+Consider:
+  1. Is the evidence credible and independently verifiable?
+  2. Are there fraud or misrepresentation indicators?
+  3. Does the evidence match the stated transaction?
+  4. Is the amount reasonable for the described product and corridor?
+
+Respond with JSON only:
+{{
+  "decision": "APPROVED" | "REJECTED" | "REVIEW_REQUIRED",
+  "confidence": <integer 0-100>,
+  "risk": "LOW" | "MEDIUM" | "HIGH",
+  "reason": "<one sentence>"
+}}"""
+
+        def get_verdict():
+            raw = gl.nondet.exec_prompt(prompt, response_format="json")
+            if not isinstance(raw, dict):
+                raw = {}
+            decision = str(raw.get("decision", "REVIEW_REQUIRED")).upper().strip()
+            if decision not in {"APPROVED", "REJECTED", "REVIEW_REQUIRED"}:
+                decision = "REVIEW_REQUIRED"
+            return {
+                "decision": decision,
+                "confidence": max(0, min(100, int(raw.get("confidence", 70)))),
+                "risk": str(raw.get("risk", "MEDIUM")).upper(),
+                "reason": str(raw.get("reason", "")),
+            }
+
+        # GenLayer Equivalence Principle: validators independently rerun get_verdict(),
+        # then a comparison LLM checks that the `decision` field matches.
+        verdict = gl.eq_principle.prompt_comparative(
+            get_verdict,
+            principle=(
+                "The `decision` field must be exactly the same "
+                "(APPROVED, REJECTED, or REVIEW_REQUIRED). "
+                "confidence, risk, and reason may differ."
+            ),
         )
 
         trade["evidence"] = evidence
@@ -439,14 +224,14 @@ Respond with JSON only:
         trade["risk"] = verdict["risk"]
         trade["reason"] = verdict["reason"]
         trade["certificate_status"] = (
-            "VERIFIED"
-            if verdict["decision"] == "APPROVED"
-            else ("REJECTED" if verdict["decision"] == "REJECTED" else "PENDING")
+            "VERIFIED" if verdict["decision"] == "APPROVED"
+            else "REJECTED" if verdict["decision"] == "REJECTED"
+            else "PENDING"
         )
         trade["escrow_decision"] = (
-            "RELEASE_FUNDS"
-            if verdict["decision"] == "APPROVED"
-            else ("REFUND_BUYER" if verdict["decision"] == "REJECTED" else "HOLD_ESCROW")
+            "RELEASE_FUNDS" if verdict["decision"] == "APPROVED"
+            else "REFUND_BUYER" if verdict["decision"] == "REJECTED"
+            else "HOLD_ESCROW"
         )
 
         amount = u256(int(trade["amount"]))
@@ -473,32 +258,72 @@ Respond with JSON only:
         evidence: str,
     ) -> str:
         """
-        GenLayer consensus call — NON-DETERMINISTIC.
+        GenLayer Equivalence Principle — prompt_comparative.
 
-        Submits the full dispute record (both parties' statements plus evidence) to
-        AI validators. Each validator independently evaluates the dispute and the
-        result is accepted only when a majority agrees on the escrow disposition:
-        RELEASE_FUNDS, REFUND_BUYER, or MANUAL_REVIEW.
+        get_verdict() is run independently by each validator. A comparison LLM then
+        checks that the `decision` field (escrow outcome) matches across validators.
 
-        This cannot be deterministic because:
-          - "proof" can be fabricated; context determines credibility
-          - Buyer and seller claims require holistic judgment, not keyword scanning
-          - Stake amounts and corridor context affect the appropriate threshold
+        Equivalence rule: `decision` must be exactly the same.
+        RELEASE_FUNDS | REFUND_BUYER | MANUAL_REVIEW — no other values accepted.
+        reason may differ and is not compared.
         """
         if trade_id not in self.trades:
             raise gl.UserError("Unknown trade")
         trade = json.loads(self.trades[trade_id])
 
-        # NON-DETERMINISTIC: AI validator consensus determines the escrow outcome
-        result = self._ai_resolve_dispute(
-            buyer_claim,
-            seller_response,
-            evidence,
-            trade["product"],
-            trade["amount"],
+        prompt = f"""You are a dispute resolution expert for African cross-border commerce.
+
+A trade dispute has been filed. Evaluate both parties and decide the escrow outcome.
+
+Trade:
+  Product: {trade['product']}
+  Amount: {trade['amount']}
+
+Buyer's claim: {buyer_claim}
+Seller's response: {seller_response}
+Additional evidence: {evidence}
+
+Choose exactly ONE decision:
+  RELEASE_FUNDS — evidence supports the seller; release escrow to seller
+  REFUND_BUYER  — evidence supports the buyer; refund escrow to buyer
+  MANUAL_REVIEW — evidence is conflicting or insufficient; requires human arbitration
+
+Consider:
+  1. Which party presents more credible and specific evidence?
+  2. Are there signs of fraud or deception on either side?
+  3. Is the seller's proof of delivery independently verifiable?
+  4. Is the buyer's complaint substantiated with specific details?
+
+Respond with JSON only:
+{{
+  "decision": "RELEASE_FUNDS" | "REFUND_BUYER" | "MANUAL_REVIEW",
+  "reason": "<one sentence>"
+}}"""
+
+        def get_verdict():
+            raw = gl.nondet.exec_prompt(prompt, response_format="json")
+            if not isinstance(raw, dict):
+                raw = {}
+            decision = str(raw.get("decision", "MANUAL_REVIEW")).upper().strip()
+            if decision not in {"RELEASE_FUNDS", "REFUND_BUYER", "MANUAL_REVIEW"}:
+                decision = "MANUAL_REVIEW"
+            return {
+                "decision": decision,
+                "reason": str(raw.get("reason", "")),
+            }
+
+        # GenLayer Equivalence Principle: validators independently rerun get_verdict(),
+        # then a comparison LLM checks that the `decision` field matches.
+        verdict = gl.eq_principle.prompt_comparative(
+            get_verdict,
+            principle=(
+                "The `decision` field must be exactly the same "
+                "(RELEASE_FUNDS, REFUND_BUYER, or MANUAL_REVIEW). "
+                "reason may differ."
+            ),
         )
 
-        decision = result["decision"]
+        decision = verdict["decision"]
         amount = u256(int(trade["amount"]))
 
         if decision == "REFUND_BUYER":
@@ -513,7 +338,7 @@ Respond with JSON only:
             self.funds_held += amount
 
         trade["dispute_decision"] = decision
-        trade["dispute_reason"] = result["reason"]
+        trade["dispute_reason"] = verdict["reason"]
         self.trades[trade_id] = json.dumps(trade, sort_keys=True)
         self.events.append(f"DISPUTE_RESOLVED:{trade_id}:{decision}")
         return decision
@@ -521,29 +346,74 @@ Respond with JSON only:
     @gl.public.write
     def issue_trust_passport(self, business: str) -> str:
         """
-        GenLayer consensus call — NON-DETERMINISTIC.
+        GenLayer Equivalence Principle — prompt_comparative.
 
-        Submits a business's full trade history to AI validators. Each validator
-        independently evaluates the record and the result is accepted only when a
-        majority agrees on the verification status: VERIFIED, WATCHLIST, or UNVERIFIED.
+        get_verdict() is run independently by each validator. A comparison LLM then
+        checks that the `status` field matches across validators.
 
-        This cannot be deterministic because:
-          - Trust thresholds require contextual judgment about corridor norms
-          - A business with a moderate score may warrant VERIFIED or WATCHLIST
-            depending on dispute context, trade volume, and delivery patterns
-          - Static score thresholds are gameable; AI holistic assessment is not
+        Equivalence rule: `status` must be exactly the same.
+        VERIFIED | WATCHLIST | UNVERIFIED — no other values accepted.
+        reason may differ and is not compared.
         """
         self._ensure_passport(business)
         passport = json.loads(self.passports[business])
 
-        # NON-DETERMINISTIC: AI validator consensus determines passport status
-        result = self._ai_issue_passport(business, passport)
+        prompt = f"""You are a business trust verification expert for African cross-border commerce.
 
-        passport["verification_status"] = result["status"]
-        passport["passport_reason"] = result["reason"]
+Assess this business's trading record and assign the correct trust passport status.
+
+Business: {business}
+Trust Score:           {passport.get('trust_score', 0)} / 100
+Completed Trades:      {passport.get('completed_trades', 0)}
+Successful Deliveries: {passport.get('successful_deliveries', 0)}
+Disputes Won:          {passport.get('disputes_won', 0)}
+Disputes Lost:         {passport.get('disputes_lost', 0)}
+
+Choose exactly ONE status:
+  VERIFIED   — strong history, high trust score (>=75), low dispute rate
+  WATCHLIST  — mixed history, moderate score (50-74), or elevated dispute rate
+  UNVERIFIED — poor history, low score (<50), high dispute rate, or insufficient history
+
+Consider:
+  1. Overall trust score and trend
+  2. Dispute win / loss ratio
+  3. Delivery success rate relative to completed trades
+  4. Total trading experience and volume
+
+Respond with JSON only:
+{{
+  "status": "VERIFIED" | "WATCHLIST" | "UNVERIFIED",
+  "reason": "<one sentence>"
+}}"""
+
+        def get_verdict():
+            raw = gl.nondet.exec_prompt(prompt, response_format="json")
+            if not isinstance(raw, dict):
+                raw = {}
+            status = str(raw.get("status", "UNVERIFIED")).upper().strip()
+            if status not in {"VERIFIED", "WATCHLIST", "UNVERIFIED"}:
+                status = "UNVERIFIED"
+            return {
+                "status": status,
+                "reason": str(raw.get("reason", "")),
+            }
+
+        # GenLayer Equivalence Principle: validators independently rerun get_verdict(),
+        # then a comparison LLM checks that the `status` field matches.
+        verdict = gl.eq_principle.prompt_comparative(
+            get_verdict,
+            principle=(
+                "The `status` field must be exactly the same "
+                "(VERIFIED, WATCHLIST, or UNVERIFIED). "
+                "reason may differ."
+            ),
+        )
+
+        passport["verification_status"] = verdict["status"]
+        passport["passport_reason"] = verdict["reason"]
         self.passports[business] = json.dumps(passport, sort_keys=True)
-        self.events.append(f"PASSPORT_ISSUED:{business}:{result['status']}")
-        return result["status"]
+        self.events.append(f"PASSPORT_ISSUED:{business}:{verdict['status']}")
+        return verdict["status"]
 
     @gl.public.write
     def update_reputation(self, business: str, score_delta: int) -> int:
@@ -554,7 +424,7 @@ Respond with JSON only:
         return int(passport["trust_score"])
 
     # =========================================================================
-    # Public view methods (deterministic reads — no consensus needed)
+    # Public view methods (deterministic reads)
     # =========================================================================
 
     @gl.public.view
@@ -571,10 +441,6 @@ Respond with JSON only:
 
     @gl.public.view
     def get_full_trust_report(self, trade_id: str) -> dict:
-        """
-        Returns the complete trust record for a trade including both passports,
-        escrow totals, and metadata about how consensus was reached.
-        """
         if trade_id not in self.trades:
             raise gl.UserError("Unknown trade")
         trade = json.loads(self.trades[trade_id])
@@ -588,15 +454,15 @@ Respond with JSON only:
                 "funds_held": str(self.funds_held),
             },
             "consensus_info": {
-                "method": "GenLayer AI validator consensus (run_nondet_unsafe)",
-                "equivalence_principle": (
-                    "Decision category must match across validators; "
-                    "explanations and confidence values may differ"
+                "method": "GenLayer Equivalence Principle — prompt_comparative",
+                "how": (
+                    "Each validator independently reruns get_verdict(). "
+                    "A comparison LLM checks that the decision/status field matches."
                 ),
-                "allowed_decisions": {
-                    "validate_trade": ["APPROVED", "REJECTED", "REVIEW_REQUIRED"],
-                    "resolve_dispute": ["RELEASE_FUNDS", "REFUND_BUYER", "MANUAL_REVIEW"],
-                    "issue_trust_passport": ["VERIFIED", "WATCHLIST", "UNVERIFIED"],
+                "equivalence_rules": {
+                    "validate_trade": "`decision` must match exactly — APPROVED | REJECTED | REVIEW_REQUIRED",
+                    "resolve_dispute": "`decision` must match exactly — RELEASE_FUNDS | REFUND_BUYER | MANUAL_REVIEW",
+                    "issue_trust_passport": "`status` must match exactly — VERIFIED | WATCHLIST | UNVERIFIED",
                 },
             },
         }

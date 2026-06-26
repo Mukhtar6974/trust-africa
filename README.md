@@ -139,12 +139,22 @@ Trust Africa's three core trust decisions are made through **AI validator consen
 | `resolve_dispute()` | `RELEASE_FUNDS` / `REFUND_BUYER` / `MANUAL_REVIEW` | Dispute claims require holistic judgment across both parties |
 | `issue_trust_passport()` | `VERIFIED` / `WATCHLIST` / `UNVERIFIED` | Trade history requires AI holistic assessment, not a score threshold |
 
-### How consensus works
+### How consensus works — GenLayer Equivalence Principle
 
-1. A **leader** validator calls the AI with the full context and receives a structured result.
-2. Each other **validator** independently reruns the same AI prompt.
-3. The on-chain result is accepted only when a **majority of validators agree on the decision category**.
-4. Validators may produce different explanations — only the category (`APPROVED`, `REFUND_BUYER`, etc.) must match.
+Each decision function uses `gl.eq_principle.prompt_comparative`:
+
+1. A **leader** validator runs `get_verdict()` and produces a structured result.
+2. Each subsequent **validator** independently reruns `get_verdict()`.
+3. A **comparison LLM** receives both outputs and checks them against the principle string.
+4. The on-chain result is accepted only when a **majority of validators pass the comparison**.
+5. Validators may produce different explanations — only the decision/status field must match.
+
+```python
+verdict = gl.eq_principle.prompt_comparative(
+    get_verdict,
+    principle="The `decision` field must be exactly the same. reason may differ.",
+)
+```
 
 ```
 APPROVED  +  "receipt confirmed"   ==  APPROVED  +  "invoice verified"  → consensus passes
