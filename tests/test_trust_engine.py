@@ -1,3 +1,15 @@
+# Tests for the local Flask preview TrustEngine (backend/trust_engine.py).
+#
+# The TrustEngine is a deterministic in-memory simulation used to keep the
+# demo fast and dependency-free. It mirrors state transitions but does NOT
+# use GenLayer consensus or LLM calls.
+#
+# The authoritative on-chain logic lives in:
+#   contracts/trust_africa_intelligent_contract.py
+#
+# That contract uses gl.vm.run_nondet_unsafe for non-deterministic AI
+# validator consensus. See tests/direct/ for contract-level tests.
+
 from backend.trust_engine import TrustEngine
 
 

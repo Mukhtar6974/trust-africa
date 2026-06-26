@@ -67,13 +67,18 @@ Scores are bounded from 0 to 100 and update automatically after trade and disput
 
 Inputs: buyer, seller, product, amount, and evidence.
 
-| Evidence | Decision | Risk |
-|---|---|---|
-| receipt, proof, tracking, invoice, delivered | APPROVED | LOW |
-| fraud, scam, fake | REJECTED | HIGH |
-| anything else | REVIEW_REQUIRED | MEDIUM |
+The AI Trade Judge is a **non-deterministic GenLayer consensus call**. It does not use
+keyword matching. Multiple validators independently ask an AI to evaluate the full trade
+context and the result is accepted on-chain only when a majority agree on the decision.
 
-Every response includes a numeric confidence score and human-readable reason.
+| Decision | Meaning |
+|---|---|
+| `APPROVED` | AI consensus: evidence demonstrates a legitimate, completed trade |
+| `REJECTED` | AI consensus: evidence shows fraud, deception, or policy violation |
+| `REVIEW_REQUIRED` | AI consensus: evidence is ambiguous or incomplete |
+
+Every response includes a numeric confidence score and human-readable reason from the
+consensus round.
 
 ## Autonomous Escrow Engine
 
@@ -87,11 +92,17 @@ The API exposes current status plus total released, refunded, and held value.
 
 ## AI Dispute Resolution
 
-Disputes accept a buyer claim, seller response, and evidence:
+Disputes accept a buyer claim, seller response, and evidence.
 
-- Non-delivery without proof → `REFUND_BUYER`
-- Proof, receipt, tracking, or delivered evidence → `RELEASE_FUNDS`
-- Inconclusive evidence → `MANUAL_REVIEW`
+Resolution is a **non-deterministic GenLayer consensus call**: multiple validators
+independently ask an AI to weigh both parties' arguments and the result is accepted
+only when a majority agree on the escrow outcome.
+
+| Decision | Meaning |
+|---|---|
+| `RELEASE_FUNDS` | AI consensus: seller's position is credible; release escrow |
+| `REFUND_BUYER` | AI consensus: buyer's position is credible; refund escrow |
+| `MANUAL_REVIEW` | AI consensus: evidence is conflicting; human arbitration needed |
 
 Winning and losing passport records update in the same workflow.
 
@@ -118,11 +129,50 @@ The production-pinned contract is at `contracts/trust_africa_intelligent_contrac
 
 The contract pins `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6` and contains no local-only runner aliases.
 
+## Non-Deterministic GenLayer Consensus
+
+Trust Africa's three core trust decisions are made through **AI validator consensus**, not fixed keyword rules. Each decision function submits the full context to an AI and requires independent validator agreement before any on-chain state changes.
+
+| Function | Decision options | Why AI consensus? |
+|---|---|---|
+| `validate_trade()` | `APPROVED` / `REJECTED` / `REVIEW_REQUIRED` | Evidence credibility is contextual and subjective |
+| `resolve_dispute()` | `RELEASE_FUNDS` / `REFUND_BUYER` / `MANUAL_REVIEW` | Dispute claims require holistic judgment across both parties |
+| `issue_trust_passport()` | `VERIFIED` / `WATCHLIST` / `UNVERIFIED` | Trade history requires AI holistic assessment, not a score threshold |
+
+### How consensus works
+
+1. A **leader** validator calls the AI with the full context and receives a structured result.
+2. Each other **validator** independently reruns the same AI prompt.
+3. The on-chain result is accepted only when a **majority of validators agree on the decision category**.
+4. Validators may produce different explanations — only the category (`APPROVED`, `REFUND_BUYER`, etc.) must match.
+
+```
+APPROVED  +  "receipt confirmed"   ==  APPROVED  +  "invoice verified"  → consensus passes
+APPROVED  vs  REJECTED                                                   → consensus fails, rotate validator
+```
+
+This means keyword-crafted evidence cannot manipulate the outcome: a malicious actor would need to convince an independent majority of AI validators, each re-evaluating the evidence from scratch.
+
+### Why not keyword rules?
+
+The original implementation used `if "receipt" in evidence` and `if "fraud" in evidence` — deterministic keyword matching. This was rejected by the GenLayer team because:
+
+- It does not use consensus for anything meaningful; any single node produces the same output
+- It is trivially gameable by including or excluding specific words
+- It does not reflect the subjective, contextual judgment that real trade evidence requires
+
+See [docs/genlayer-nondeterministic-consensus.md](docs/genlayer-nondeterministic-consensus.md) for the full technical explanation.
+
 ## Why GenLayer
 
-Trust Africa uses GenLayer intelligent contracts to evaluate commercial evidence that cannot be resolved by simple deterministic rules alone. The AI Trade Judge analyzes the submitted evidence and returns one of three explainable outcomes: `APPROVED`, `REJECTED`, or `REVIEW_REQUIRED`.
+Trust Africa uses GenLayer intelligent contracts because trade evidence evaluation, dispute resolution, and business trust assessment are **inherently subjective** tasks. They require the kind of contextual judgment that:
 
-That decision drives the wider trust workflow. Escrow can autonomously release funds, refund the buyer, or hold settlement for review. Business Trust Passports then update over time as verified trades, successful deliveries, disputes, and fraud signals build a portable reputation history.
+- Cannot be reduced to deterministic rules without being gameable
+- Needs multi-party independent verification to be trustworthy
+- Has real financial consequences (escrow release, refund, or hold)
+- Must be auditable and on-chain for dispute appeals
+
+Escrow can autonomously release funds, refund the buyer, or hold settlement for review — but only after independent AI validators agree. Business Trust Passports update over time as verified trades, successful deliveries, disputes, and fraud signals build a portable reputation history.
 
 ## Demo Workflow
 
