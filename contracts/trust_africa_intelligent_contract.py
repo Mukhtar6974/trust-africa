@@ -212,9 +212,12 @@ Respond with JSON only:
         verdict = gl.eq_principle.prompt_comparative(
             get_verdict,
             principle=(
-                "The `decision` field must be exactly the same "
-                "(APPROVED, REJECTED, or REVIEW_REQUIRED). "
-                "confidence, risk, and reason may differ."
+                "The outputs are equivalent if and only if the `decision` field is "
+                "exactly the same string: APPROVED, REJECTED, or REVIEW_REQUIRED. "
+                "This is the sole consensus criterion — it represents the categorical "
+                "judgment on whether the trade evidence is valid. "
+                "The `confidence` score, `risk` level, and `reason` text are "
+                "explanatory metadata and may differ freely between validators."
             ),
         )
 
@@ -317,9 +320,11 @@ Respond with JSON only:
         verdict = gl.eq_principle.prompt_comparative(
             get_verdict,
             principle=(
-                "The `decision` field must be exactly the same "
-                "(RELEASE_FUNDS, REFUND_BUYER, or MANUAL_REVIEW). "
-                "reason may differ."
+                "The outputs are equivalent if and only if the `decision` field is "
+                "exactly the same string: RELEASE_FUNDS, REFUND_BUYER, or MANUAL_REVIEW. "
+                "This is the sole consensus criterion — it represents the categorical "
+                "escrow outcome that will be executed on-chain. "
+                "The `reason` text is explanatory and may differ freely between validators."
             ),
         )
 
@@ -403,9 +408,11 @@ Respond with JSON only:
         verdict = gl.eq_principle.prompt_comparative(
             get_verdict,
             principle=(
-                "The `status` field must be exactly the same "
-                "(VERIFIED, WATCHLIST, or UNVERIFIED). "
-                "reason may differ."
+                "The outputs are equivalent if and only if the `status` field is "
+                "exactly the same string: VERIFIED, WATCHLIST, or UNVERIFIED. "
+                "This is the sole consensus criterion — it represents the categorical "
+                "trust passport classification that will be stored on-chain. "
+                "The `reason` text is explanatory and may differ freely between validators."
             ),
         )
 

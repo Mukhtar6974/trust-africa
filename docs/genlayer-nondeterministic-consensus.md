@@ -40,19 +40,19 @@ correctly; agreeing on it is trivially guaranteed and adds no trust value.
 ## What Changed
 
 The refactored contract removes all keyword-based classification and replaces it with
-**three non-deterministic AI consensus calls** using `gl.vm.run_nondet_unsafe`:
+**three non-deterministic AI consensus calls** using `gl.eq_principle.prompt_comparative`:
 
 | Function | Old (deterministic) | New (non-deterministic) |
 |---|---|---|
-| `validate_trade()` | Keyword scan on evidence string | AI evaluates full trade context |
-| `resolve_dispute()` | `"proof" in seller_response` check | AI weighs both parties' claims |
-| `issue_trust_passport()` | `trust_score >= 80` threshold | AI holistically assesses trade history |
+| `validate_trade()` | Keyword scan on evidence string | AI evaluates full trade context via `prompt_comparative` |
+| `resolve_dispute()` | `"proof" in seller_response` check | AI weighs both parties' claims via `prompt_comparative` |
+| `issue_trust_passport()` | `trust_score >= 80` threshold | AI holistically assesses trade history via `prompt_comparative` |
 
-Each call follows the GenLayer consensus pattern:
-1. A **leader** validator calls the AI and produces a structured result.
-2. Each subsequent **validator** independently re-runs the same AI prompt.
-3. The result is accepted on-chain only if a validator majority agrees on the
-   **decision category** (not exact wording).
+Each call follows the GenLayer Equivalence Principle pattern:
+1. A **leader** validator runs `get_verdict()`, which calls `gl.nondet.exec_prompt`.
+2. Each subsequent **validator** independently reruns `get_verdict()`.
+3. A **comparison LLM** receives both outputs and checks them against the principle string.
+4. The result is accepted on-chain only if a validator majority passes the comparison.
 
 ## How the Equivalence Principle Is Applied
 
