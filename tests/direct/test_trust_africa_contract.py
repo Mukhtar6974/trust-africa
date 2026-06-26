@@ -2,8 +2,8 @@
 #
 # These tests exercise the GenLayer intelligent contract logic in direct
 # (single-node, no-consensus) mode. The core decision functions —
-# validate_trade, resolve_dispute, issue_trust_passport — call an LLM
-# internally via gl.vm.run_nondet_unsafe, so exact output values vary.
+# validate_trade, resolve_dispute, issue_trust_passport — use
+# gl.eq_principle.prompt_comparative internally, so exact output values vary.
 #
 # Assertions check that:
 #   1. Return values are within the documented allowed set

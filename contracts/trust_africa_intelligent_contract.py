@@ -22,6 +22,7 @@
 # the consensus criteria.
 
 import json
+import re
 
 from genlayer import *
 
@@ -105,6 +106,32 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
         passport["disputes_won"] = int(passport["disputes_won"]) + won_delta
         passport["disputes_lost"] = int(passport["disputes_lost"]) + lost_delta
         self.passports[business] = json.dumps(passport, sort_keys=True)
+
+    # -------------------------------------------------------------------------
+    # LLM response parser — handles two cases
+    # -------------------------------------------------------------------------
+
+    def _parse_llm_json(self, raw) -> dict:
+        # Case 1: exec_prompt already returned a parsed dict (response_format="json")
+        if isinstance(raw, dict):
+            return raw
+        # Case 2: LLM returned a JSON string — strip markdown fences and parse
+        if isinstance(raw, str):
+            text = raw.strip()
+            # Strip ```json ... ``` or ``` ... ``` fences if present
+            text = re.sub(r"^```[a-z]*\s*", "", text)
+            text = re.sub(r"\s*```$", "", text)
+            first = text.find("{")
+            last = text.rfind("}")
+            if first != -1 and last != -1:
+                text = text[first : last + 1]
+                # Remove trailing commas that break json.loads
+                text = re.sub(r",\s*([}\]])", r"\1", text)
+                try:
+                    return json.loads(text)
+                except json.JSONDecodeError:
+                    pass
+        return {}
 
     # =========================================================================
     # Public write methods
@@ -194,9 +221,9 @@ Respond with JSON only:
 }}"""
 
         def get_verdict():
-            raw = gl.nondet.exec_prompt(prompt, response_format="json")
-            if not isinstance(raw, dict):
-                raw = {}
+            raw = self._parse_llm_json(
+                gl.nondet.exec_prompt(prompt, response_format="json")
+            )
             decision = str(raw.get("decision", "REVIEW_REQUIRED")).upper().strip()
             if decision not in {"APPROVED", "REJECTED", "REVIEW_REQUIRED"}:
                 decision = "REVIEW_REQUIRED"
@@ -304,9 +331,9 @@ Respond with JSON only:
 }}"""
 
         def get_verdict():
-            raw = gl.nondet.exec_prompt(prompt, response_format="json")
-            if not isinstance(raw, dict):
-                raw = {}
+            raw = self._parse_llm_json(
+                gl.nondet.exec_prompt(prompt, response_format="json")
+            )
             decision = str(raw.get("decision", "MANUAL_REVIEW")).upper().strip()
             if decision not in {"RELEASE_FUNDS", "REFUND_BUYER", "MANUAL_REVIEW"}:
                 decision = "MANUAL_REVIEW"
@@ -392,9 +419,9 @@ Respond with JSON only:
 }}"""
 
         def get_verdict():
-            raw = gl.nondet.exec_prompt(prompt, response_format="json")
-            if not isinstance(raw, dict):
-                raw = {}
+            raw = self._parse_llm_json(
+                gl.nondet.exec_prompt(prompt, response_format="json")
+            )
             status = str(raw.get("status", "UNVERIFIED")).upper().strip()
             if status not in {"VERIFIED", "WATCHLIST", "UNVERIFIED"}:
                 status = "UNVERIFIED"
@@ -466,10 +493,14 @@ Respond with JSON only:
                     "Each validator independently reruns get_verdict(). "
                     "A comparison LLM checks that the decision/status field matches."
                 ),
-                "equivalence_rules": {
-                    "validate_trade": "`decision` must match exactly — APPROVED | REJECTED | REVIEW_REQUIRED",
-                    "resolve_dispute": "`decision` must match exactly — RELEASE_FUNDS | REFUND_BUYER | MANUAL_REVIEW",
-                    "issue_trust_passport": "`status` must match exactly — VERIFIED | WATCHLIST | UNVERIFIED",
+                "allowed_decisions": {
+                    "validate_trade": ["APPROVED", "REJECTED", "REVIEW_REQUIRED"],
+                    "resolve_dispute": ["RELEASE_FUNDS", "REFUND_BUYER", "MANUAL_REVIEW"],
+                    "issue_trust_passport": ["VERIFIED", "WATCHLIST", "UNVERIFIED"],
                 },
+                "equivalence_rule": (
+                    "The decision/status field must be exactly the same across validators. "
+                    "Confidence, risk, and reason are metadata and may differ freely."
+                ),
             },
         }

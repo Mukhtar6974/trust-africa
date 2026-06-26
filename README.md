@@ -224,7 +224,7 @@ Open `frontend/index.html` in a browser. The API runs at `http://127.0.0.1:5000`
 
 ```bash
 python -m pytest tests/test_trust_engine.py -v
-genvm-lint lint contracts/trust_africa_intelligent_contract.py --json
+genvm-lint check contracts/trust_africa_intelligent_contract.py
 python -m pytest tests/direct/test_trust_africa_contract.py -v
 ```
 

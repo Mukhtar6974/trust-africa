@@ -66,31 +66,37 @@ Reputation changes are applied automatically:
 | Fraud detected | -10 |
 | Rejected evidence | -5 |
 
-## AI Judge and Escrow Engine
+## AI Judge and Escrow Engine — GenLayer Equivalence Principle
 
-The current V6 classifier provides a deterministic baseline suitable for direct testing:
+`validate_trade()` uses `gl.eq_principle.prompt_comparative`. Each validator
+independently calls the AI with the full trade context (buyer, seller, product,
+amount, evidence). A comparison LLM then checks that the `decision` fields match.
+No keyword rules are used.
 
-- `receipt`, `proof`, `tracking`, `invoice`, or `delivered` → `APPROVED`
-- `fraud`, `scam`, or `fake` → `REJECTED`
-- anything else → `REVIEW_REQUIRED`
+| AI consensus verdict | Escrow action |
+|---|---|
+| `APPROVED` | `RELEASE_FUNDS` |
+| `REJECTED` | `REFUND_BUYER` |
+| `REVIEW_REQUIRED` | `HOLD_ESCROW` |
 
-The verdict drives escrow without a separate operator:
+The equivalence principle: `decision` must be exactly the same across validators.
+`confidence`, `risk`, and `reason` may differ and are not compared.
 
-- `APPROVED` → `RELEASE_FUNDS`
-- `REJECTED` → `REFUND_BUYER`
-- `REVIEW_REQUIRED` → `HOLD_ESCROW`
+## Dispute Resolution — GenLayer Equivalence Principle
 
-For production evidence that requires subjective document interpretation, this classifier is the normalization layer around a GenLayer comparative validator. Validators should independently analyze the same evidence and agree on the stable decision fields rather than trusting one leader's prose.
+`resolve_dispute()` uses `gl.eq_principle.prompt_comparative`. Each validator
+independently asks the AI to weigh the buyer's claim, seller's response, and
+supporting evidence. A comparison LLM checks that the `decision` fields match.
+No keyword rules are used.
 
-## Dispute Resolution
+| AI consensus verdict | Action |
+|---|---|
+| `RELEASE_FUNDS` | Escrow released to seller; seller gains dispute win |
+| `REFUND_BUYER` | Escrow refunded to buyer; buyer gains dispute win |
+| `MANUAL_REVIEW` | Escrow held; no reputation change |
 
-Disputes accept a buyer claim, seller response, and additional evidence:
-
-- Non-delivery without proof → `REFUND_BUYER`
-- Proof, receipt, tracking, or delivered evidence → `RELEASE_FUNDS`
-- Inconclusive evidence → `MANUAL_REVIEW`
-
-The winner receives a reputation increase, passport dispute counters change, and escrow state is updated in the same transition.
+The equivalence principle: `decision` must be exactly the same across validators.
+`reason` may differ and is not compared.
 
 ## Deployment Path
 

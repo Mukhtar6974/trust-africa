@@ -63,9 +63,10 @@ GenLayer Equivalence Principle convenience wrapper for comparative consensus.
 
 ```python
 def get_verdict():
-    raw = gl.nondet.exec_prompt(prompt, response_format="json")
-    if not isinstance(raw, dict):
-        raw = {}
+    # _parse_llm_json handles both dict (already parsed) and string (needs parsing)
+    raw = self._parse_llm_json(
+        gl.nondet.exec_prompt(prompt, response_format="json")
+    )
     decision = str(raw.get("decision", "REVIEW_REQUIRED")).upper().strip()
     if decision not in {"APPROVED", "REJECTED", "REVIEW_REQUIRED"}:
         decision = "REVIEW_REQUIRED"
@@ -79,9 +80,9 @@ def get_verdict():
 verdict = gl.eq_principle.prompt_comparative(
     get_verdict,
     principle=(
-        "The `decision` field must be exactly the same "
-        "(APPROVED, REJECTED, or REVIEW_REQUIRED). "
-        "confidence, risk, and reason may differ."
+        "The outputs are equivalent if and only if the `decision` field is "
+        "exactly the same string: APPROVED, REJECTED, or REVIEW_REQUIRED. "
+        "confidence, risk, and reason are metadata and may differ freely."
     ),
 )
 ```
