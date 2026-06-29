@@ -70,9 +70,13 @@ def get_verdict():
     decision = str(raw.get("decision", "REVIEW_REQUIRED")).upper().strip()
     if decision not in {"APPROVED", "REJECTED", "REVIEW_REQUIRED"}:
         decision = "REVIEW_REQUIRED"
+    try:
+        confidence = max(0, min(100, int(raw.get("confidence", 70))))
+    except (TypeError, ValueError):
+        confidence = 70
     return {
         "decision": decision,
-        "confidence": max(0, min(100, int(raw.get("confidence", 70)))),
+        "confidence": confidence,
         "risk": str(raw.get("risk", "MEDIUM")).upper(),
         "reason": str(raw.get("reason", "")),
     }

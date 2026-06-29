@@ -102,12 +102,13 @@ full trade history. Consensus required on: `VERIFIED | WATCHLIST | UNVERIFIED`.
 
 ---
 
-## Robustness Fixes (V7)
+## Robustness and Security Fixes (V7 → V8)
 
-The `get_verdict()` helper in every AI decision function now wraps confidence
+### V7 — LLM output robustness
+
+The `get_verdict()` helper in every AI decision function wraps confidence
 parsing in a `try/except (TypeError, ValueError)` so the contract degrades
-gracefully if the LLM returns a non-numeric confidence value rather than raising
-an unhandled exception.
+gracefully if the LLM returns a non-numeric confidence value.
 
 ```python
 try:
@@ -116,6 +117,28 @@ except (TypeError, ValueError):
     confidence = 70
 ```
 
+### V8 — Access control on `update_reputation`
+
+`update_reputation` previously had no access control — any address could call it
+to arbitrarily raise or lower any business's trust score, bypassing the
+AI-consensus-backed `issue_trust_passport`. The `owner` address was stored in
+`__init__` but never enforced.
+
+Fixed by adding an owner check:
+
+```python
+@gl.public.write
+def update_reputation(self, business: str, score_delta: int) -> int:
+    """Owner-only deterministic score adjustment."""
+    if gl.message.sender_account != self.owner:
+        raise gl.UserError("Only the contract owner can call update_reputation")
+    ...
+```
+
+Two direct-mode tests cover this:
+- `test_update_reputation_owner_succeeds` — verifies the deployer can call it
+- `test_update_reputation_non_owner_rejected` — verifies any other address is rejected
+
 ---
 
 ## Test Results
@@ -123,15 +146,15 @@ except (TypeError, ValueError):
 ```
 py -3.14 -m pytest tests/ -v
 
-4 passed, 10 skipped in 0.07s
+4 passed, 12 skipped in 0.14s
 ```
 
 - **4 unit tests pass** (`tests/test_trust_engine.py`) — no external dependencies.
-- **10 direct contract tests collected** (`tests/direct/`) — skipped automatically
-  when the GenVM binary is not available locally. These tests validate that AI
-  decisions return values within the documented allowed sets and that on-chain state
-  transitions are consistent with whatever decision the AI made. They pass when
-  the GenVM binary can be downloaded (`genvm-lint check` + a working GenVM runtime).
+- **12 direct contract tests collected** (`tests/direct/`) — skipped automatically
+  when the GenVM binary is not available locally. These include:
+  - 10 AI decision correctness and state-transition tests
+  - 2 new access-control tests for `update_reputation` (owner succeeds; non-owner rejected)
+  They pass when the GenVM binary can be downloaded (`genvm-lint check` + a working GenVM runtime).
 
 ---
 

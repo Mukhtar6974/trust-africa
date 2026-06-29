@@ -20,6 +20,9 @@
 #
 # confidence, risk, and reason may differ across validators and are not part of
 # the consensus criteria.
+#
+# Access control:
+#   update_reputation — owner-only write; reverts for any other caller.
 
 import json
 import re
@@ -455,7 +458,9 @@ Respond with JSON only:
 
     @gl.public.write
     def update_reputation(self, business: str, score_delta: int) -> int:
-        """Deterministic score adjustment — no consensus needed for arithmetic."""
+        """Owner-only deterministic score adjustment — no consensus needed for arithmetic."""
+        if gl.message.sender_account != self.owner:
+            raise gl.UserError("Only the contract owner can call update_reputation")
         self._adjust_passport(business, score_delta, 0, 0, 0, 0)
         passport = json.loads(self.passports[business])
         self.events.append(f"REPUTATION_UPDATED:{business}:{score_delta}")

@@ -1,30 +1,15 @@
-print("===================================")
-print("      TRUST AFRICA PLATFORM")
-print("===================================")
+"""
+Trust Africa — project entry points.
 
-print("\nMarketplace")
-print("Seller: Kwame")
-print("Product: 500 textile materials")
-print("Price: 2000")
+  Intelligent contract (GenLayer):
+    contracts/trust_africa_intelligent_contract.py
 
-print("\nTrade")
-print("Buyer: Amina")
-print("Seller: Kwame")
-print("Amount: 2000")
-print("Status: RELEASE_FUNDS")
+  Local demo backend (Flask):
+    python backend/server.py
 
-print("\nReputation")
-print("Amina Trust Score: 60")
-print("Kwame Trust Score: 80")
+  Run tests:
+    py -3.14 -m pytest tests/test_trust_engine.py -v
 
-print("\nEscrow")
-print("Funds Released: 2000")
-
-print("\nDisputes")
-print("TRADE001 - RESOLVED")
-
-print("\nHistory")
-print("TRADE001")
-print("TRADE002")
-
-print("\nPlatform Status: ACTIVE")
+  Lint contract:
+    genvm-lint check contracts/trust_africa_intelligent_contract.py
+"""

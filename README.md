@@ -233,13 +233,14 @@ genvm-lint check contracts/trust_africa_intelligent_contract.py
 py -3.14 -m pytest tests/direct/ -v
 ```
 
-Unit tests: **4 passed**. Direct tests skip automatically when the GenVM binary
-cannot be downloaded (no failure noise). They validate AI decision correctness and
-state-transition consistency once the GenVM runtime is available.
+Unit tests: **4 passed**. Direct tests (12 total, including 2 access-control
+tests for `update_reputation`) skip automatically when the GenVM binary cannot be
+downloaded. They validate AI decision correctness, state-transition consistency,
+and owner-only enforcement once the GenVM runtime is available.
 
 ## Screenshots
 
-The repository includes an earlier dashboard screenshot at [Screenshot 2026-06-19 183231.png](Screenshot%202026-06-19%20183231.png). Replace it with a V6 product screenshot after deployment.
+A dashboard screenshot is included at [Screenshot 2026-06-19 183231.png](Screenshot%202026-06-19%20183231.png).
 
 ## Future Roadmap
 

@@ -258,3 +258,29 @@ def test_full_trust_report_includes_consensus_info(direct_vm, direct_deploy, dir
     assert "APPROVED" in ci["allowed_decisions"]["validate_trade"]
     assert "RELEASE_FUNDS" in ci["allowed_decisions"]["resolve_dispute"]
     assert "VERIFIED" in ci["allowed_decisions"]["issue_trust_passport"]
+
+
+# ---------------------------------------------------------------------------
+# update_reputation — access control
+# ---------------------------------------------------------------------------
+
+def test_update_reputation_owner_succeeds(direct_vm, direct_deploy, direct_owner):
+    """Contract deployer (owner) must be able to call update_reputation."""
+    contract = direct_deploy("contracts/trust_africa_intelligent_contract.py")
+    # direct_vm.sender defaults to the same address as direct_owner (the deployer)
+    direct_vm.sender = direct_owner
+
+    before = contract.get_trust_passport("Lagos Textile Export Ltd")["trust_score"]
+    new_score = contract.update_reputation("Lagos Textile Export Ltd", 5)
+    assert new_score == min(100, before + 5)
+
+
+def test_update_reputation_non_owner_rejected(direct_vm, direct_deploy, direct_alice):
+    """Non-owner account must NOT be able to call update_reputation."""
+    import pytest
+    contract = direct_deploy("contracts/trust_africa_intelligent_contract.py")
+    # Switch to alice — she is not the deployer, so not the owner
+    direct_vm.sender = direct_alice
+
+    with pytest.raises(Exception):
+        contract.update_reputation("Lagos Textile Export Ltd", 50)
