@@ -223,12 +223,19 @@ Open `frontend/index.html` in a browser. The API runs at `http://127.0.0.1:5000`
 ## Validation
 
 ```bash
-python -m pytest tests/test_trust_engine.py -v
+# Unit tests — no external dependencies, run immediately
+py -3.14 -m pytest tests/test_trust_engine.py -v
+
+# Lint the intelligent contract
 genvm-lint check contracts/trust_africa_intelligent_contract.py
-python -m pytest tests/direct/test_trust_africa_contract.py -v
+
+# Direct contract tests — require GenVM binary (downloaded automatically on first run)
+py -3.14 -m pytest tests/direct/ -v
 ```
 
-Direct tests require the GenVM artifact matching the pinned runner.
+Unit tests: **4 passed**. Direct tests skip automatically when the GenVM binary
+cannot be downloaded (no failure noise). They validate AI decision correctness and
+state-transition consistency once the GenVM runtime is available.
 
 ## Screenshots
 

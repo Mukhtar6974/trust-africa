@@ -7,7 +7,7 @@
 # The authoritative on-chain logic lives in:
 #   contracts/trust_africa_intelligent_contract.py
 #
-# That contract uses gl.vm.run_nondet_unsafe for non-deterministic AI
+# That contract uses gl.eq_principle.prompt_comparative for non-deterministic AI
 # validator consensus. See tests/direct/ for contract-level tests.
 
 from backend.trust_engine import TrustEngine

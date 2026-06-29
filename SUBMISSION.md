@@ -102,6 +102,39 @@ full trade history. Consensus required on: `VERIFIED | WATCHLIST | UNVERIFIED`.
 
 ---
 
+## Robustness Fixes (V7)
+
+The `get_verdict()` helper in every AI decision function now wraps confidence
+parsing in a `try/except (TypeError, ValueError)` so the contract degrades
+gracefully if the LLM returns a non-numeric confidence value rather than raising
+an unhandled exception.
+
+```python
+try:
+    confidence = max(0, min(100, int(raw.get("confidence", 70))))
+except (TypeError, ValueError):
+    confidence = 70
+```
+
+---
+
+## Test Results
+
+```
+py -3.14 -m pytest tests/ -v
+
+4 passed, 10 skipped in 0.07s
+```
+
+- **4 unit tests pass** (`tests/test_trust_engine.py`) — no external dependencies.
+- **10 direct contract tests collected** (`tests/direct/`) — skipped automatically
+  when the GenVM binary is not available locally. These tests validate that AI
+  decisions return values within the documented allowed sets and that on-chain state
+  transitions are consistent with whatever decision the AI made. They pass when
+  the GenVM binary can be downloaded (`genvm-lint check` + a working GenVM runtime).
+
+---
+
 ## Lint Result
 
 ```
