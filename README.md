@@ -10,6 +10,7 @@ The responsive SaaS frontend includes:
 
 - A protected trade form and explainable AI decision card
 - Live certificate and escrow outcomes
+- Dynamic trade creation using browser-generated `Date.now()` trade IDs
 - Business Trust Passports with dynamic scores
 - Recent trust events
 - AI dispute resolution with evidence
@@ -200,6 +201,7 @@ Create Protected Trade
 | Endpoint | Purpose |
 |---|---|
 | `POST /ai-judge` | Create and adjudicate a trade |
+| `GET/POST /trade/create` | Compatibility trade creation route with unique trade IDs |
 | `POST /validate-evidence` | Preview evidence classification |
 | `POST /resolve-dispute` | Resolve a claim with evidence |
 | `GET /escrow-status` | Escrow status and totals |
@@ -219,12 +221,14 @@ python backend/server.py
 ```
 
 Open `frontend/index.html` in a browser. The API runs at `http://127.0.0.1:5000`.
+Production deployments should set `FLASK_DEBUG=0` and restrict cross-origin access
+with `TRUST_AFRICA_CORS_ORIGINS=https://your-frontend.example`.
 
 ## Validation
 
 ```bash
-# Unit tests — no external dependencies, run immediately
-py -3.14 -m pytest tests/test_trust_engine.py -v
+# Unit and API tests — no external services required
+py -3.14 -m pytest tests -v
 
 # Lint the intelligent contract
 genvm-lint check contracts/trust_africa_intelligent_contract.py
@@ -233,7 +237,7 @@ genvm-lint check contracts/trust_africa_intelligent_contract.py
 py -3.14 -m pytest tests/direct/ -v
 ```
 
-Unit tests: **4 passed**. Direct tests (12 total, including 2 access-control
+Local tests: **7 passed**. Direct tests (12 total, including 2 access-control
 tests for `update_reputation`) skip automatically when the GenVM binary cannot be
 downloaded. They validate AI decision correctness, state-transition consistency,
 and owner-only enforcement once the GenVM runtime is available.
@@ -258,6 +262,8 @@ A dashboard screenshot is included at [Screenshot 2026-06-19 183231.png](Screens
 - AI Trade Judge
 - Autonomous Escrow
 - Evidence-Based Dispute Resolution
+- Dynamic Trade Creation
+- Escrow Status API
 - Dynamic Trust Passports
 - Cross-Border Trade Intelligence
 - Professional SaaS Frontend

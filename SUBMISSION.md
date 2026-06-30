@@ -139,6 +139,17 @@ Two direct-mode tests cover this:
 - `test_update_reputation_owner_succeeds` — verifies the deployer can call it
 - `test_update_reputation_non_owner_rejected` — verifies any other address is rejected
 
+### Final production hardening
+
+- Flask debug mode is disabled by default and can be explicitly enabled with
+  `FLASK_DEBUG=1` for local development.
+- CORS remains local-demo friendly by default but can be restricted with
+  `TRUST_AFRICA_CORS_ORIGINS`.
+- The compatibility `/trade/create` route now creates real unique trade records
+  instead of returning the legacy static `TRADE003` response.
+- The local `TrustEngine` preserves duplicate client-supplied trade IDs by adding
+  a suffix instead of overwriting existing records.
+
 ---
 
 ## Test Results
@@ -146,10 +157,10 @@ Two direct-mode tests cover this:
 ```
 py -3.14 -m pytest tests/ -v
 
-4 passed, 12 skipped in 0.14s
+7 passed, 12 skipped in 4.31s
 ```
 
-- **4 unit tests pass** (`tests/test_trust_engine.py`) — no external dependencies.
+- **7 local unit/API tests pass** (`tests/test_trust_engine.py`, `tests/test_backend_api.py`) — no external services required.
 - **12 direct contract tests collected** (`tests/direct/`) — skipped automatically
   when the GenVM binary is not available locally. These include:
   - 10 AI decision correctness and state-transition tests

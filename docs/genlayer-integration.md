@@ -26,7 +26,7 @@ RELEASE_FUNDS / REFUND_BUYER / HOLD_ESCROW
 Trust passports and reputation are updated
 ```
 
-The V6 contract pins the production GenVM runner:
+The contract pins a production GenVM runner:
 
 ```text
 py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6

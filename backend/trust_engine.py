@@ -131,7 +131,14 @@ class TrustEngine:
 
     def adjudicate_trade(self, payload: dict) -> dict:
         with self._lock:
-            trade_id = str(payload.get("trade_id") or f"TRADE-{int(datetime.now().timestamp() * 1000)}")
+            requested_trade_id = str(
+                payload.get("trade_id") or f"TRADE-{int(datetime.now().timestamp() * 1000)}"
+            )
+            trade_id = requested_trade_id
+            duplicate_index = 1
+            while trade_id in self.trades:
+                duplicate_index += 1
+                trade_id = f"{requested_trade_id}-{duplicate_index}"
             buyer = str(payload.get("buyer", "")).strip() or "Accra Retail Partners"
             seller = str(payload.get("seller", "")).strip() or "Lagos Textile Export Ltd"
             product = str(payload.get("product", "")).strip() or "Commercial goods"
