@@ -68,6 +68,32 @@ def test_inconclusive_trade_holds_escrow():
     assert result["escrow"]["funds_held"] == 750
 
 
+def test_duplicate_trade_ids_are_preserved_as_unique_records():
+    engine = TrustEngine()
+
+    first = engine.adjudicate_trade({
+        "trade_id": "TRADE-DUPLICATE",
+        "buyer": "Accra Retail Partners",
+        "seller": "Lagos Textile Export Ltd",
+        "product": "Textiles",
+        "amount": 100,
+        "evidence": "Delivery receipt",
+    })
+    second = engine.adjudicate_trade({
+        "trade_id": "TRADE-DUPLICATE",
+        "buyer": "Accra Retail Partners",
+        "seller": "Lagos Textile Export Ltd",
+        "product": "Textiles",
+        "amount": 150,
+        "evidence": "Delivery receipt",
+    })
+
+    assert first["trade_id"] == "TRADE-DUPLICATE"
+    assert second["trade_id"] == "TRADE-DUPLICATE-2"
+    assert first["trade_id"] in engine.trades
+    assert second["trade_id"] in engine.trades
+
+
 def test_dispute_uses_claim_response_and_evidence():
     engine = TrustEngine()
     engine.adjudicate_trade({
@@ -87,4 +113,3 @@ def test_dispute_uses_claim_response_and_evidence():
 
     assert result["decision"] == "RELEASE_FUNDS"
     assert result["seller_passport"]["disputes_won"] == 5
-

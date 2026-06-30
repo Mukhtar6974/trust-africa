@@ -1,3 +1,6 @@
+import os
+from datetime import datetime, timezone
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
@@ -7,7 +10,22 @@ except ModuleNotFoundError:  # Supports `python backend/server.py`.
     from trust_engine import engine
 
 app = Flask(__name__)
-CORS(app)
+
+cors_origins = os.getenv("TRUST_AFRICA_CORS_ORIGINS", "*")
+CORS(
+    app,
+    resources={
+        r"/*": {
+            "origins": "*" if cors_origins == "*" else [
+                origin.strip() for origin in cors_origins.split(",") if origin.strip()
+            ]
+        }
+    },
+)
+
+
+def _new_trade_id() -> str:
+    return f"TRADE-{int(datetime.now(timezone.utc).timestamp() * 1000)}"
 
 @app.route("/")
 def home():
@@ -93,7 +111,18 @@ def risk_dashboard():
 def create_trade():
     if request.method == "POST":
         return jsonify(engine.adjudicate_trade(request.get_json(silent=True) or {}))
-    return jsonify({"trade_id": "TRADE003", "buyer": "Nairobi Agro Supply", "seller": "Kigali Logistics Hub", "amount": 5000, "status": "OPEN"})
+    return jsonify(
+        engine.adjudicate_trade(
+            {
+                "trade_id": _new_trade_id(),
+                "buyer": "Nairobi Agro Supply",
+                "seller": "Kigali Logistics Hub",
+                "product": "Demo export consignment",
+                "amount": 5000,
+                "evidence": "Evidence awaiting validator review",
+            }
+        )
+    )
 
 @app.route("/trust-certificate")
 def trust_certificate():
@@ -148,4 +177,4 @@ def full_trust_report():
     return jsonify(engine.report())
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=os.getenv("FLASK_DEBUG", "0") == "1")
