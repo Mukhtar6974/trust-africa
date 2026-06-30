@@ -149,6 +149,11 @@ Two direct-mode tests cover this:
   instead of returning the legacy static `TRADE003` response.
 - The local `TrustEngine` preserves duplicate client-supplied trade IDs by adding
   a suffix instead of overwriting existing records.
+- Validator prompts now encode user-controlled trade/evidence fields as JSON
+  strings and explicitly treat them as untrusted data, reducing prompt-injection
+  risk in AI consensus calls.
+- Python bytecode and generated artifacts are excluded with `.gitignore`; cached
+  `.pyc` files were removed from version control.
 
 ---
 

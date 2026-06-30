@@ -164,6 +164,10 @@ APPROVED  vs  REJECTED                                                   → con
 
 This means keyword-crafted evidence cannot manipulate the outcome: a malicious actor would need to convince an independent majority of AI validators, each re-evaluating the evidence from scratch.
 
+User-controlled trade fields, claims, and evidence are JSON-encoded before being
+placed into validator prompts and are explicitly treated as untrusted data. This
+reduces prompt-injection risk from malicious evidence text.
+
 ### Why not keyword rules?
 
 The original implementation used `if "receipt" in evidence` and `if "fraud" in evidence` — deterministic keyword matching. This was rejected by the GenLayer team because:

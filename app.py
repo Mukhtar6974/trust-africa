@@ -8,7 +8,7 @@ Trust Africa — project entry points.
     python backend/server.py
 
   Run tests:
-    py -3.14 -m pytest tests/test_trust_engine.py -v
+    py -3.14 -m pytest tests -v
 
   Lint contract:
     genvm-lint check contracts/trust_africa_intelligent_contract.py
