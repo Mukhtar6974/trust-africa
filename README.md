@@ -164,6 +164,10 @@ APPROVED  vs  REJECTED                                                   → con
 
 This means keyword-crafted evidence cannot manipulate the outcome: a malicious actor would need to convince an independent majority of AI validators, each re-evaluating the evidence from scratch.
 
+User-controlled trade fields, claims, and evidence are JSON-encoded before being
+placed into validator prompts and are explicitly treated as untrusted data. This
+reduces prompt-injection risk from malicious evidence text.
+
 ### Why not keyword rules?
 
 The original implementation used `if "receipt" in evidence` and `if "fraud" in evidence` — deterministic keyword matching. This was rejected by the GenLayer team because:
@@ -237,10 +241,14 @@ genvm-lint check contracts/trust_africa_intelligent_contract.py
 py -3.14 -m pytest tests/direct/ -v
 ```
 
-Local tests: **7 passed**. Direct tests (12 total, including 2 access-control
-tests for `update_reputation`) skip automatically when the GenVM binary cannot be
-downloaded. They validate AI decision correctness, state-transition consistency,
-and owner-only enforcement once the GenVM runtime is available.
+Final validation on Windows with the official GenLayer Direct Mode runtime:
+**19 passed** (`7` local unit/API tests + `12` direct GenVM tests).
+
+The official `genlayer-test` Direct Mode loader detected the pinned contract
+runner after installing `genvm-universal.tar.xz` from the official GenLayer
+`v0.2.16` GitHub release into `~/.cache/gltest-direct`. Direct tests use mocked
+LLM responses so GenVM state transitions are repeatable without external AI
+credentials.
 
 ## Screenshots
 
