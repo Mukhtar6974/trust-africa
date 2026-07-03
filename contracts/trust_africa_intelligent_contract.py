@@ -44,7 +44,7 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
     funds_held: u256
 
     def __init__(self):
-        self.owner = gl.message.sender_account
+        self.owner = gl.message.sender_address
         self.trade_count = u256(0)
         self.funds_released = u256(0)
         self.funds_refunded = u256(0)
@@ -471,7 +471,7 @@ Respond with JSON only:
     @gl.public.write
     def update_reputation(self, business: str, score_delta: int) -> int:
         """Owner-only deterministic score adjustment — no consensus needed for arithmetic."""
-        if gl.message.sender_account != self.owner:
+        if gl.message.sender_address != self.owner:
             raise gl.UserError("Only the contract owner can call update_reputation")
         self._adjust_passport(business, score_delta, 0, 0, 0, 0)
         passport = json.loads(self.passports[business])

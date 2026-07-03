@@ -1,49 +1,104 @@
-"""
-Conftest for direct-mode GenLayer contract tests.
+"""Windows compatibility helpers for official genlayer-test direct mode.
 
-Direct tests deploy and execute the intelligent contract via the GenVM binary.
-The binary is downloaded automatically by genlayer-test on first run; this
-requires internet access and a compatible gltest version.
-
-If the binary cannot be obtained, all direct tests are skipped rather than
-failing with an unhelpful HTTP error.
+The official GenLayer test loader downloads and extracts the GenVM runtime into
+``~/.cache/gltest-direct``. On Windows, genlayer-test 0.29.2 attempts to unlink
+the temporary stdin file immediately after ``os.dup2(fd, 0)``. POSIX permits
+unlinking an open file; Windows does not. This patch keeps the official loader
+path intact and defers deletion until the VM restores stdin during cleanup.
 """
+
+import os
+import tempfile
 
 import pytest
 
 
-def _genvm_reachable() -> bool:
-    """Return True if the GenVM artifact URL resolves (HEAD check, 5 s timeout)."""
-    try:
-        import urllib.request
-        from gltest.direct.sdk_loader import get_version  # type: ignore[import]
+@pytest.fixture(autouse=True)
+def windows_stdin_tempfile_cleanup(monkeypatch):
+    if os.name != "nt":
+        return
 
-        version = get_version()
-        url = (
-            f"https://github.com/genlayerlabs/genvm/releases/download/"
-            f"{version}/genvm-universal.tar.xz"
-        )
-        req = urllib.request.Request(url, method="HEAD")
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            return resp.status == 200
-    except Exception:
-        return False
+    import gltest.direct.loader as loader
+    import gltest.direct.vm as vm_module
+
+    def _inject_message_to_fd0_windows(vm):
+        try:
+            from genlayer.py import calldata
+            from genlayer.py.types import Address
+        except ImportError:
+            return
+
+        sender_addr = vm.sender
+        if isinstance(sender_addr, bytes):
+            sender_addr = Address(sender_addr)
+
+        contract_addr = vm._contract_address
+        if isinstance(contract_addr, bytes):
+            contract_addr = Address(contract_addr)
+
+        origin_addr = vm.origin
+        if isinstance(origin_addr, bytes):
+            origin_addr = Address(origin_addr)
+
+        message_data = {
+            "contract_address": contract_addr,
+            "sender_address": sender_addr,
+            "origin_address": origin_addr,
+            "stack": [],
+            "value": vm._value,
+            "datetime": vm._datetime,
+            "is_init": False,
+            "chain_id": vm._chain_id,
+            "entry_kind": 0,
+            "entry_data": b"",
+            "entry_stage_data": None,
+        }
+
+        encoded = calldata.encode(message_data)
+        fd, path = tempfile.mkstemp()
+        try:
+            os.write(fd, encoded)
+            os.lseek(fd, 0, os.SEEK_SET)
+            vm._original_stdin_fd = os.dup(0)
+            vm._genlayer_temp_stdin_path = path
+            os.dup2(fd, 0)
+        finally:
+            os.close(fd)
+
+    original_cleanup = vm_module.VMContext._cleanup_after_deactivate
+
+    def _cleanup_after_deactivate_windows(self):
+        temp_path = getattr(self, "_genlayer_temp_stdin_path", None)
+        try:
+            original_cleanup(self)
+        finally:
+            if temp_path:
+                try:
+                    os.unlink(temp_path)
+                except FileNotFoundError:
+                    pass
+                self._genlayer_temp_stdin_path = None
+
+    monkeypatch.setattr(loader, "_inject_message_to_fd0", _inject_message_to_fd0_windows)
+    monkeypatch.setattr(
+        vm_module.VMContext,
+        "_cleanup_after_deactivate",
+        _cleanup_after_deactivate_windows,
+    )
 
 
-# Evaluate once per session; avoids repeated HEAD requests.
-_GENVM_OK: bool | None = None
-
-
-@pytest.fixture(scope="session", autouse=True)
-def require_genvm_binary() -> None:
-    """Skip every direct test in this session if the GenVM binary is unavailable."""
-    global _GENVM_OK
-    if _GENVM_OK is None:
-        _GENVM_OK = _genvm_reachable()
-    if not _GENVM_OK:
-        pytest.skip(
-            "GenVM binary unavailable — the required release artifact could not be "
-            "fetched from GitHub. Direct tests need internet access and a gltest "
-            "version whose expected release tag exists. Unit tests in "
-            "tests/test_trust_engine.py run without this dependency."
-        )
+@pytest.fixture(autouse=True)
+def direct_mode_llm_mocks(direct_vm):
+    """Mock non-deterministic AI calls for repeatable direct GenVM tests."""
+    direct_vm.mock_llm(
+        "trade verification expert",
+        '{"decision":"APPROVED","confidence":94,"risk":"LOW","reason":"Mocked direct-mode trade evidence approval"}',
+    )
+    direct_vm.mock_llm(
+        "dispute resolution expert",
+        '{"decision":"RELEASE_FUNDS","reason":"Mocked direct-mode dispute evidence supports seller"}',
+    )
+    direct_vm.mock_llm(
+        "business trust verification expert",
+        '{"status":"VERIFIED","reason":"Mocked direct-mode passport verification"}',
+    )

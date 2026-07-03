@@ -241,10 +241,14 @@ genvm-lint check contracts/trust_africa_intelligent_contract.py
 py -3.14 -m pytest tests/direct/ -v
 ```
 
-Local tests: **7 passed**. Direct tests (12 total, including 2 access-control
-tests for `update_reputation`) skip automatically when the GenVM binary cannot be
-downloaded. They validate AI decision correctness, state-transition consistency,
-and owner-only enforcement once the GenVM runtime is available.
+Final validation on Windows with the official GenLayer Direct Mode runtime:
+**19 passed** (`7` local unit/API tests + `12` direct GenVM tests).
+
+The official `genlayer-test` Direct Mode loader detected the pinned contract
+runner after installing `genvm-universal.tar.xz` from the official GenLayer
+`v0.2.16` GitHub release into `~/.cache/gltest-direct`. Direct tests use mocked
+LLM responses so GenVM state transitions are repeatable without external AI
+credentials.
 
 ## Screenshots
 

@@ -130,7 +130,7 @@ Fixed by adding an owner check:
 @gl.public.write
 def update_reputation(self, business: str, score_delta: int) -> int:
     """Owner-only deterministic score adjustment."""
-    if gl.message.sender_account != self.owner:
+    if gl.message.sender_address != self.owner:
         raise gl.UserError("Only the contract owner can call update_reputation")
     ...
 ```
@@ -162,15 +162,17 @@ Two direct-mode tests cover this:
 ```
 py -3.14 -m pytest tests/ -v
 
-7 passed, 12 skipped in 4.31s
+19 passed in 8.47s
 ```
 
 - **7 local unit/API tests pass** (`tests/test_trust_engine.py`, `tests/test_backend_api.py`) — no external services required.
-- **12 direct contract tests collected** (`tests/direct/`) — skipped automatically
-  when the GenVM binary is not available locally. These include:
+- **12 direct GenVM tests pass** (`tests/direct/`) with the official
+  `genlayer-test` Direct Mode runtime installed from the GenLayer `v0.2.16`
+  `genvm-universal.tar.xz` release asset. These include:
   - 10 AI decision correctness and state-transition tests
-  - 2 new access-control tests for `update_reputation` (owner succeeds; non-owner rejected)
-  They pass when the GenVM binary can be downloaded (`genvm-lint check` + a working GenVM runtime).
+  - 2 access-control tests for `update_reputation` (owner succeeds; non-owner rejected)
+- Direct tests use deterministic LLM mocks for repeatability while still
+  executing the contract through the official GenVM Direct Mode loader.
 
 ---
 
