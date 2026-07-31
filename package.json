@@ -1,0 +1,16 @@
+{
+  "name": "trust-africa",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite frontend --host 127.0.0.1",
+    "build": "vite build frontend --outDir ../dist/frontend",
+    "check:frontend": "node --check frontend/app.js"
+  },
+  "dependencies": {
+    "genlayer-js": "latest"
+  },
+  "devDependencies": {
+    "vite": "^8.1.5"
+  }
+}

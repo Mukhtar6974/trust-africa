@@ -1,281 +1,93 @@
 # Trust Africa
 
-**GenLayer-native intelligent trust infrastructure for African commerce.**
+Trust Africa is a GenLayer-native escrow and trust workflow for African cross-border commerce. The deployed intelligent contract is the only authority for trade state, validation, disputes, escrow counters, and reputation changes.
 
-Trust Africa helps businesses protect cross-border transactions with intelligent evidence validation, autonomous escrow decisions, business trust passports, dynamic reputation, and AI-assisted dispute resolution.
+## Deployment configuration
 
-## Product Experience
+The frontend reads these Vite variables at build time:
 
-The responsive SaaS frontend includes:
-
-- A protected trade form and explainable AI decision card
-- Live certificate and escrow outcomes
-- Dynamic trade creation using browser-generated `Date.now()` trade IDs
-- Business Trust Passports with dynamic scores
-- Recent trust events
-- AI dispute resolution with evidence
-- Five realistic African trade corridors and active values
-
-## Architecture
-
-```text
-Browser (HTML/CSS/JavaScript)
-        ↓
-Flask API + local TrustEngine preview
-        ↓
-GenLayer Intelligent Contract
-        ↓
-Consensus verdict + escrow transition + passport update
+```env
+VITE_GENLAYER_NETWORK=testnetBradbury
+VITE_GENLAYER_CONTRACT_ADDRESS=
 ```
 
-- **Frontend:** product UI, form validation, result rendering, and API consumption.
-- **Flask backend:** local preview engine, indexed views, route activity, and event feeds.
-- **GenLayer contract:** authoritative trade, evidence, reputation, passport, dispute, and escrow state transitions.
+The default network is Testnet Bradbury. The source repository did not contain a live deployed address, so the submitted deployment address must be supplied through `VITE_GENLAYER_CONTRACT_ADDRESS`; the UI refuses state-changing operations until it is configured. The same variables are exposed by Flask’s read-only `/config` endpoint for deployment diagnostics.
 
-See [GenLayer integration architecture](docs/genlayer-integration.md) for the consensus boundary and deployment path.
+## Exact frontend-to-contract flow
 
-## Trust Passport
+1. The user connects a browser wallet through `window.ethereum`.
+2. The app creates a read-only GenLayer client and, after connection, a separate wallet-signed write client.
+3. The buyer wallet calls `create_trade(trade_id, buyer, seller, buyer_address, seller_address, product, amount, evidence)`.
+4. The app waits for `TransactionStatus.FINALIZED` and checks `txExecutionResultName` before continuing.
+5. The buyer or seller wallet calls `validate_trade(trade_id, evidence)`.
+6. After another finalized successful receipt, the app reads `get_trade`, `get_trust_passport`, and `get_full_trust_report` through the read client.
+7. A review-required trade can call `resolve_dispute(trade_id, buyer_claim, seller_response, evidence)` once, again waiting for finality and checking execution before reading state.
 
-Every business passport tracks:
+The UI displays the connected wallet address, configured contract address, every submitted transaction hash, execution result, and finalized status. It does not submit state changes to Flask.
 
-- Trust Score
-- Completed Trades
-- Successful Deliveries
-- Disputes Won
-- Disputes Lost
-- Verification Status
+## Contract state machine
 
-Example seeded passports:
-
-| Business | Trust Score | Completed Trades | Certificate |
-|---|---:|---:|---|
-| Lagos Textile Export Ltd | 91 | 145 | VERIFIED |
-| Accra Retail Partners | 88 | 122 | VERIFIED |
-
-### Dynamic Reputation Rules
-
-| Event | Score change |
-|---|---:|
-| Successful trade | +2 |
-| Approved evidence | +3 |
-| Dispute won | +2 |
-| Fraud detected | -10 |
-| Rejected evidence | -5 |
-
-Scores are bounded from 0 to 100 and update automatically after trade and dispute outcomes.
-
-## AI Trade Judge
-
-Inputs: buyer, seller, product, amount, and evidence.
-
-The AI Trade Judge is a **non-deterministic GenLayer consensus call**. It does not use
-keyword matching. Multiple validators independently ask an AI to evaluate the full trade
-context and the result is accepted on-chain only when a majority agree on the decision.
-
-| Decision | Meaning |
-|---|---|
-| `APPROVED` | AI consensus: evidence demonstrates a legitimate, completed trade |
-| `REJECTED` | AI consensus: evidence shows fraud, deception, or policy violation |
-| `REVIEW_REQUIRED` | AI consensus: evidence is ambiguous or incomplete |
-
-Every response includes a numeric confidence score and human-readable reason from the
-consensus round.
-
-## Autonomous Escrow Engine
-
-| Trust decision | Escrow action |
-|---|---|
-| APPROVED | RELEASE_FUNDS |
-| REJECTED | REFUND_BUYER |
-| REVIEW_REQUIRED | HOLD_ESCROW |
-
-The API exposes current status plus total released, refunded, and held value.
-
-## AI Dispute Resolution
-
-Disputes accept a buyer claim, seller response, and evidence.
-
-Resolution is a **non-deterministic GenLayer consensus call**: multiple validators
-independently ask an AI to weigh both parties' arguments and the result is accepted
-only when a majority agree on the escrow outcome.
-
-| Decision | Meaning |
-|---|---|
-| `RELEASE_FUNDS` | AI consensus: seller's position is credible; release escrow |
-| `REFUND_BUYER` | AI consensus: buyer's position is credible; refund escrow |
-| `MANUAL_REVIEW` | AI consensus: evidence is conflicting; human arbitration needed |
-
-Winning and losing passport records update in the same workflow.
-
-## Cross-Border Commerce
-
-The demo includes live sample values for:
-
-- Nigeria → Ghana
-- Kenya → Uganda
-- Rwanda → Tanzania
-- South Africa → Botswana
-- Egypt → Morocco
-
-## GenLayer Intelligent Contract
-
-The production-pinned contract is at `contracts/trust_africa_intelligent_contract.py` and exposes:
-
-- `create_trade()`
-- `validate_trade()`
-- `resolve_dispute()`
-- `issue_trust_passport()`
-- `update_reputation()`
-- `get_full_trust_report()`
-
-The contract pins `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6` and contains no local-only runner aliases.
-
-## Non-Deterministic GenLayer Consensus
-
-Trust Africa's three core trust decisions are made through **AI validator consensus**, not fixed keyword rules. Each decision function submits the full context to an AI and requires independent validator agreement before any on-chain state changes.
-
-| Function | Decision options | Why AI consensus? |
-|---|---|---|
-| `validate_trade()` | `APPROVED` / `REJECTED` / `REVIEW_REQUIRED` | Evidence credibility is contextual and subjective |
-| `resolve_dispute()` | `RELEASE_FUNDS` / `REFUND_BUYER` / `MANUAL_REVIEW` | Dispute claims require holistic judgment across both parties |
-| `issue_trust_passport()` | `VERIFIED` / `WATCHLIST` / `UNVERIFIED` | Trade history requires AI holistic assessment, not a score threshold |
-
-### How consensus works — GenLayer Equivalence Principle
-
-Each decision function uses `gl.eq_principle.prompt_comparative`:
-
-1. A **leader** validator runs `get_verdict()` and produces a structured result.
-2. Each subsequent **validator** independently reruns `get_verdict()`.
-3. A **comparison LLM** receives both outputs and checks them against the principle string.
-4. The on-chain result is accepted only when a **majority of validators pass the comparison**.
-5. Validators may produce different explanations — only the decision/status field must match.
-
-```python
-verdict = gl.eq_principle.prompt_comparative(
-    get_verdict,
-    principle="The `decision` field must be exactly the same. reason may differ.",
-)
+```mermaid
+flowchart TD
+    CREATED -->|validate_trade: APPROVED| SETTLED
+    CREATED -->|validate_trade: REJECTED| SETTLED
+    CREATED -->|validate_trade: REVIEW_REQUIRED| REVIEW_REQUIRED
+    REVIEW_REQUIRED -->|resolve_dispute: RELEASE_FUNDS| SETTLED
+    REVIEW_REQUIRED -->|resolve_dispute: REFUND_BUYER| SETTLED
+    REVIEW_REQUIRED -->|resolve_dispute: MANUAL_REVIEW| MANUAL_REVIEW
+    SETTLED -->|all writes rejected| SETTLED
+    MANUAL_REVIEW -->|all dispute replays rejected| MANUAL_REVIEW
 ```
 
-```
-APPROVED  +  "receipt confirmed"   ==  APPROVED  +  "invoice verified"  → consensus passes
-APPROVED  vs  REJECTED                                                   → consensus fails, rotate validator
-```
+Each trade stores the buyer and seller addresses, `validation_completed`, `dispute_resolved`, `settled`, `settlement_accounted`, and `status`. Escrow is held exactly once at creation and removed exactly once at settlement. Reputation counters are changed only inside that one settlement path.
 
-This means keyword-crafted evidence cannot manipulate the outcome: a malicious actor would need to convince an independent majority of AI validators, each re-evaluating the evidence from scratch.
+## Authorization model
 
-User-controlled trade fields, claims, and evidence are JSON-encoded before being
-placed into validator prompts and are explicitly treated as untrusted data. This
-reduces prompt-injection risk from malicious evidence text.
+- Only the stored buyer address can create a trade.
+- Only the stored buyer or seller address can validate or resolve that trade.
+- Validation can run once and only from `CREATED`.
+- Disputes can run once and only from `REVIEW_REQUIRED` or `DISPUTE_PENDING`.
+- A settled trade rejects all further settlement processing.
+- `update_reputation` and `issue_trust_passport` are owner-only writes.
+- Read methods are `get_trade`, `get_trust_passport`, and `get_full_trust_report`.
 
-### Why not keyword rules?
+## Backend boundary
 
-The original implementation used `if "receipt" in evidence` and `if "fraud" in evidence` — deterministic keyword matching. This was rejected by the GenLayer team because:
+Flask only serves `frontend/index.html`, static frontend assets, `/health`, and read-only deployment configuration at `/config`. `backend/trust_engine.py` and its tests were removed. There is no browser or production API route that performs keyword matching or maintains in-memory trade state.
 
-- It does not use consensus for anything meaningful; any single node produces the same output
-- It is trivially gameable by including or excluding specific words
-- It does not reflect the subjective, contextual judgment that real trade evidence requires
+## Run locally
 
-See [docs/genlayer-nondeterministic-consensus.md](docs/genlayer-nondeterministic-consensus.md) for the full technical explanation.
-
-## Why GenLayer
-
-Trust Africa uses GenLayer intelligent contracts because trade evidence evaluation, dispute resolution, and business trust assessment are **inherently subjective** tasks. They require the kind of contextual judgment that:
-
-- Cannot be reduced to deterministic rules without being gameable
-- Needs multi-party independent verification to be trustworthy
-- Has real financial consequences (escrow release, refund, or hold)
-- Must be auditable and on-chain for dispute appeals
-
-Escrow can autonomously release funds, refund the buyer, or hold settlement for review — but only after independent AI validators agree. Business Trust Passports update over time as verified trades, successful deliveries, disputes, and fraud signals build a portable reputation history.
-
-## Demo Workflow
-
-```text
-Create Protected Trade
-        → Submit Evidence
-        → AI Trade Judge
-        → Trust Certificate
-        → Escrow Release / Refund / Hold
-        → Trust Passport Update
+```powershell
+Copy-Item .env.example .env
+npm install
+npm run dev
 ```
 
-## API
+Build the Vite bundle before serving it through Flask:
 
-| Endpoint | Purpose |
-|---|---|
-| `POST /ai-judge` | Create and adjudicate a trade |
-| `GET/POST /trade/create` | Compatibility trade creation route with unique trade IDs |
-| `POST /validate-evidence` | Preview evidence classification |
-| `POST /resolve-dispute` | Resolve a claim with evidence |
-| `GET /escrow-status` | Escrow status and totals |
-| `GET /trust-passports` | List business passports |
-| `GET /trust-passport/<business>` | Read one passport |
-| `GET /trust-events` | Recent platform events |
-| `GET /cross-border-activity` | Trade corridors and active values |
-| `GET /full-trust-report` | Latest trade, passports, escrow, and events |
-
-All previous MVP routes remain available for compatibility.
-
-## Run Locally
-
-```bash
-pip install flask flask-cors pytest
+```powershell
+npm run build
 python backend/server.py
 ```
 
-Open `frontend/index.html` in a browser. The API runs at `http://127.0.0.1:5000`.
-Production deployments should set `FLASK_DEBUG=0` and restrict cross-origin access
-with `TRUST_AFRICA_CORS_ORIGINS=https://your-frontend.example`.
+Set `VITE_GENLAYER_NETWORK`, `VITE_GENLAYER_CONTRACT_ADDRESS`, and `TRUST_AFRICA_CORS_ORIGINS` in the environment before running a deployment. A browser wallet and a funded account are required for writes.
 
-## Validation
+## Validation commands
 
-```bash
-# Unit and API tests — no external services required
-py -3.14 -m pytest tests -v
-
-# Lint the intelligent contract
+```powershell
 genvm-lint check contracts/trust_africa_intelligent_contract.py
-
-# Direct contract tests — require GenVM binary (downloaded automatically on first run)
-py -3.14 -m pytest tests/direct/ -v
+python -m pytest tests -v
+gltest tests/integration/ -v -s --network testnet_bradbury
+npm run check:frontend
+npm run build
 ```
 
-Final validation on Windows with the official GenLayer Direct Mode runtime:
-**19 passed** (`7` local unit/API tests + `12` direct GenVM tests).
+Direct tests cover participant authorization, owner-only writes, state transitions, dispute gating, replay prevention, finality-oriented receipt assertions in integration tests, and exact-once escrow/reputation accounting. Integration tests are marked `slow` and require a configured GenLayer environment.
 
-The official `genlayer-test` Direct Mode loader detected the pinned contract
-runner after installing `genvm-universal.tar.xz` from the official GenLayer
-`v0.2.16` GitHub release into `~/.cache/gltest-direct`. Direct tests use mocked
-LLM responses so GenVM state transitions are repeatable without external AI
-credentials.
+## Validation in this checkout
 
-## Screenshots
-
-A dashboard screenshot is included at [Screenshot 2026-06-19 183231.png](Screenshot%202026-06-19%20183231.png).
-
-## Future Roadmap
-
-- Real GenLayer deployment
-- Wallet connection
-- USDC escrow
-- Business verification
-- Document upload
-- Courier and tracking API verification
-- Multi-agent AI dispute council
-
-## Submission Highlights
-
-- GenLayer Intelligent Contract
-- AI Trade Judge
-- Autonomous Escrow
-- Evidence-Based Dispute Resolution
-- Dynamic Trade Creation
-- Escrow Status API
-- Dynamic Trust Passports
-- Cross-Border Trade Intelligence
-- Professional SaaS Frontend
-
-## License
-
-MIT
+- `genvm-lint lint contracts/trust_africa_intelligent_contract.py --json`: passed 3 checks.
+- `genvm-lint check ... --json`: lint passed; SDK validation was blocked by the sandbox denying the GenVM download (`WinError 10013`).
+- `python -m pytest tests -v`: 5 passed, 1 skipped, and 10 direct tests failed before contract execution for the same blocked GenVM download.
+- `npm run check:frontend`: passed; `npm run build`: passed with Vite 8.1.5 after correcting the Vite CLI script.
+- No live transaction was performed: there is no deployed address, wallet approval, funded account, GenLayer CLI, or transaction hash available here.

@@ -6,8 +6,8 @@ They are **not part of the production backend** and are not imported by `backend
 The production backend is:
 
 ```
-backend/server.py        — Flask API server
-backend/trust_engine.py  — in-memory TrustEngine (local preview only)
+backend/server.py        — static/config-only Flask server
 ```
 
 These files are kept for project history only.
+The directory is not imported by the Flask server or frontend.

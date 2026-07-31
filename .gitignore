@@ -12,7 +12,17 @@ env/
 
 # Tool/build output
 artifacts/
+node_modules/
+frontend/dist/
 
 # OS/editor noise
 .DS_Store
 Thumbs.db
+node_modules/
+dist/
+.env
+.gltest_cache/
+
+.env
+
+.runtime-home/

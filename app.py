@@ -1,15 +1,5 @@
-"""
-Trust Africa — project entry points.
+"""Trust Africa entry points.
 
-  Intelligent contract (GenLayer):
-    contracts/trust_africa_intelligent_contract.py
-
-  Local demo backend (Flask):
-    python backend/server.py
-
-  Run tests:
-    py -3.14 -m pytest tests -v
-
-  Lint contract:
-    genvm-lint check contracts/trust_africa_intelligent_contract.py
+Run the static frontend/config server with ``python backend/server.py``.
+The authoritative state lives in the deployed GenLayer contract.
 """
