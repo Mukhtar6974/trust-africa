@@ -106,43 +106,50 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
     def _prompt_value(self, value: str) -> str:
         return json.dumps(str(value), sort_keys=True)
 
-    def _address_text(self, address: Address) -> str:
+    def _address_text(self, address) -> str:
+        if isinstance(address, (bytes, bytearray)):
+            return "0x" + bytes(address).hex()
+        raw = getattr(address, "as_bytes", None)
+        if raw is not None:
+            if callable(raw):
+                raw = raw()
+            return "0x" + bytes(raw).hex()
         return str(address).lower()
 
     def _require_owner(self) -> None:
         if self._address_text(gl.message.sender_address) != self._address_text(self.owner):
-            raise gl.UserError("Only the contract owner can call this method")
+            raise gl.vm.UserError("Only the contract owner can call this method")
 
     def _require_participant(self, trade: dict) -> None:
         caller = self._address_text(gl.message.sender_address)
         participants = {
-            str(trade["buyer_address"]).lower(),
-            str(trade["seller_address"]).lower(),
+            self._address_text(trade["buyer_address"]),
+            self._address_text(trade["seller_address"]),
         }
         if caller not in participants:
-            raise gl.UserError("Only the buyer or seller can process this trade")
+            raise gl.vm.UserError("Only the buyer or seller can process this trade")
 
     def _require_unsettled(self, trade: dict) -> None:
         if bool(trade.get("settled", False)):
-            raise gl.UserError("Trade is already settled")
+            raise gl.vm.UserError("Trade is already settled")
         if bool(trade.get("settlement_accounted", False)):
-            raise gl.UserError("Trade settlement was already accounted")
+            raise gl.vm.UserError("Trade settlement was already accounted")
 
     def _settle_trade(self, trade: dict, escrow_decision: str, source: str) -> None:
         self._require_unsettled(trade)
         if not bool(trade.get("funds_held_accounted", False)):
-            raise gl.UserError("Escrow amount was already processed")
+            raise gl.vm.UserError("Escrow amount was already processed")
 
         amount = u256(int(trade["amount"]))
         if int(self.funds_held) < int(amount):
-            raise gl.UserError("Escrow accounting invariant violated")
+            raise gl.vm.UserError("Escrow accounting invariant violated")
 
         if escrow_decision == "RELEASE_FUNDS":
             self.funds_released += amount
         elif escrow_decision == "REFUND_BUYER":
             self.funds_refunded += amount
         else:
-            raise gl.UserError("Invalid settlement decision")
+            raise gl.vm.UserError("Invalid settlement decision")
 
         self.funds_held -= amount
         trade["funds_held_accounted"] = False
@@ -177,13 +184,13 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
         evidence: str,
     ) -> str:
         if not trade_id or trade_id in self.trades:
-            raise gl.UserError("Trade ID must be unique")
+            raise gl.vm.UserError("Trade ID must be unique")
         if not buyer or not seller or not product or int(amount) <= 0:
-            raise gl.UserError("Trade fields and amount are required")
+            raise gl.vm.UserError("Trade fields and amount are required")
         if self._address_text(buyer_address) == self._address_text(seller_address):
-            raise gl.UserError("Buyer and seller addresses must be different")
+            raise gl.vm.UserError("Buyer and seller addresses must be different")
         if self._address_text(gl.message.sender_address) != self._address_text(buyer_address):
-            raise gl.UserError("Only the buyer can create this trade")
+            raise gl.vm.UserError("Only the buyer can create this trade")
 
         self._ensure_passport(buyer)
         self._ensure_passport(seller)
@@ -191,8 +198,8 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
             "trade_id": trade_id,
             "buyer": buyer,
             "seller": seller,
-            "buyer_address": str(buyer_address),
-            "seller_address": str(seller_address),
+            "buyer_address": self._address_text(buyer_address),
+            "seller_address": self._address_text(seller_address),
             "product": product,
             "amount": str(amount),
             "evidence": evidence,
@@ -220,14 +227,14 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
     @gl.public.write
     def validate_trade(self, trade_id: str, evidence: str) -> str:
         if trade_id not in self.trades:
-            raise gl.UserError("Unknown trade")
+            raise gl.vm.UserError("Unknown trade")
         trade = json.loads(self.trades[trade_id])
         self._require_participant(trade)
         self._require_unsettled(trade)
         if bool(trade.get("validation_completed", False)):
-            raise gl.UserError("Trade validation is already completed")
+            raise gl.vm.UserError("Trade validation is already completed")
         if trade.get("status") != "CREATED":
-            raise gl.UserError("Trade is not awaiting validation")
+            raise gl.vm.UserError("Trade is not awaiting validation")
 
         prompt = f"""You are a trade verification expert for African cross-border commerce.
 
@@ -305,16 +312,16 @@ Respond with JSON containing decision, confidence (0-100), risk, and reason."""
         evidence: str,
     ) -> str:
         if trade_id not in self.trades:
-            raise gl.UserError("Unknown trade")
+            raise gl.vm.UserError("Unknown trade")
         trade = json.loads(self.trades[trade_id])
         self._require_participant(trade)
         self._require_unsettled(trade)
         if not bool(trade.get("validation_completed", False)):
-            raise gl.UserError("Trade must be validated before a dispute")
+            raise gl.vm.UserError("Trade must be validated before a dispute")
         if bool(trade.get("dispute_resolved", False)):
-            raise gl.UserError("Trade dispute is already resolved")
+            raise gl.vm.UserError("Trade dispute is already resolved")
         if trade.get("status") not in {"REVIEW_REQUIRED", "DISPUTE_PENDING"}:
-            raise gl.UserError("Disputes are only permitted for review-required trades")
+            raise gl.vm.UserError("Disputes are only permitted for review-required trades")
 
         trade["status"] = "DISPUTE_PENDING"
         prompt = f"""You are a dispute resolution expert for African cross-border commerce.
@@ -415,19 +422,19 @@ Respond with JSON containing status and reason."""
     @gl.public.view
     def get_trade(self, trade_id: str) -> dict:
         if trade_id not in self.trades:
-            raise gl.UserError("Unknown trade")
+            raise gl.vm.UserError("Unknown trade")
         return json.loads(self.trades[trade_id])
 
     @gl.public.view
     def get_trust_passport(self, business: str) -> dict:
         if business not in self.passports:
-            raise gl.UserError("Unknown business")
+            raise gl.vm.UserError("Unknown business")
         return json.loads(self.passports[business])
 
     @gl.public.view
     def get_full_trust_report(self, trade_id: str) -> dict:
         if trade_id not in self.trades:
-            raise gl.UserError("Unknown trade")
+            raise gl.vm.UserError("Unknown trade")
         trade = json.loads(self.trades[trade_id])
         buyer_passport = json.loads(self.passports[trade["buyer"]])
         seller_passport = json.loads(self.passports[trade["seller"]])

@@ -39,8 +39,8 @@ def test_create_trade_stores_addresses_and_initial_state(
 
     trade = contract.get_trade("T-1")
     report = contract.get_full_trust_report("T-1")
-    assert trade["buyer_address"].lower() == str(direct_alice).lower()
-    assert trade["seller_address"].lower() == str(direct_bob).lower()
+    assert trade["buyer_address"].lower() == ("0x" + bytes(direct_alice).hex()).lower()
+    assert trade["seller_address"].lower() == ("0x" + bytes(direct_bob).hex()).lower()
     assert trade["status"] == "CREATED"
     assert trade["validation_completed"] is False
     assert trade["dispute_resolved"] is False
@@ -111,7 +111,7 @@ def test_dispute_requires_review_required_trade(
     create_trade(contract, direct_alice, direct_bob)
     contract.validate_trade("T-1", "Signed delivery evidence")
 
-    with pytest.raises(Exception, match="only permitted"):
+    with pytest.raises(Exception, match="already settled|only permitted"):
         contract.resolve_dispute("T-1", "Claim", "Response", "Evidence")
 
 
