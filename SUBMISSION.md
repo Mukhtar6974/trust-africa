@@ -131,7 +131,7 @@ Fixed by adding an owner check:
 def update_reputation(self, business: str, score_delta: int) -> int:
     """Owner-only deterministic score adjustment."""
     if gl.message.sender_address != self.owner:
-        raise gl.UserError("Only the contract owner can call update_reputation")
+        raise gl.vm.UserError("Only the contract owner can call update_reputation")
     ...
 ```
 
@@ -175,6 +175,25 @@ py -3.14 -m pytest tests/ -v
   executing the contract through the official GenVM Direct Mode loader.
 
 ---
+### Live GenLayer Studio validation
+
+A fresh contract instance was deployed in Normal (Full Consensus) mode after
+the `gl.vm.UserError` compatibility fix.
+
+Live GenLayer Studio results:
+
+- `create_trade` created `LIVE-T8-20260811` successfully.
+- `validate_trade` returned `SUCCESS` with `REVIEW_REQUIRED`.
+- `get_trade` returned the stored trade successfully.
+- `get_full_trust_report` returned the full trust and escrow report.
+- `resolve_dispute` returned `SUCCESS` with `RELEASE_FUNDS`.
+- `update_reputation("Accra Retail Partners", 2)` returned `SUCCESS`
+  with a new trust score of `94`.
+
+These are live demonstration outcomes. AI-backed methods may return different
+categorical decisions depending on the submitted evidence and validator
+judgments. The important result is that the final decision is accepted through
+GenLayer equivalence consensus before state is updated.
 
 ## Lint Result
 
