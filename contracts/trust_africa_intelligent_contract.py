@@ -155,9 +155,9 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
         evidence: str,
     ) -> str:
         if not trade_id or trade_id in self.trades:
-            raise gl.UserError("Trade ID must be unique")
+            raise gl.vm.UserError("Trade ID must be unique")
         if not buyer or not seller or not product or int(amount) <= 0:
-            raise gl.UserError("Trade fields and amount are required")
+            raise gl.vm.UserError("Trade fields and amount are required")
         self._ensure_passport(buyer)
         self._ensure_passport(seller)
         trade = {
@@ -194,7 +194,7 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
         confidence, risk, and reason may differ and are not compared.
         """
         if trade_id not in self.trades:
-            raise gl.UserError("Unknown trade")
+            raise gl.vm.UserError("Unknown trade")
         trade = json.loads(self.trades[trade_id])
 
         prompt = f"""You are a trade verification expert for African cross-border commerce.
@@ -312,7 +312,7 @@ Respond with JSON only:
         reason may differ and is not compared.
         """
         if trade_id not in self.trades:
-            raise gl.UserError("Unknown trade")
+            raise gl.vm.UserError("Unknown trade")
         trade = json.loads(self.trades[trade_id])
 
         prompt = f"""You are a dispute resolution expert for African cross-border commerce.
@@ -472,7 +472,7 @@ Respond with JSON only:
     def update_reputation(self, business: str, score_delta: int) -> int:
         """Owner-only deterministic score adjustment — no consensus needed for arithmetic."""
         if gl.message.sender_address != self.owner:
-            raise gl.UserError("Only the contract owner can call update_reputation")
+            raise gl.vm.UserError("Only the contract owner can call update_reputation")
         self._adjust_passport(business, score_delta, 0, 0, 0, 0)
         passport = json.loads(self.passports[business])
         self.events.append(f"REPUTATION_UPDATED:{business}:{score_delta}")
@@ -485,19 +485,19 @@ Respond with JSON only:
     @gl.public.view
     def get_trade(self, trade_id: str) -> dict:
         if trade_id not in self.trades:
-            raise gl.UserError("Unknown trade")
+            raise gl.vm.UserError("Unknown trade")
         return json.loads(self.trades[trade_id])
 
     @gl.public.view
     def get_trust_passport(self, business: str) -> dict:
         if business not in self.passports:
-            raise gl.UserError("Unknown business")
+            raise gl.vm.UserError("Unknown business")
         return json.loads(self.passports[business])
 
     @gl.public.view
     def get_full_trust_report(self, trade_id: str) -> dict:
         if trade_id not in self.trades:
-            raise gl.UserError("Unknown trade")
+            raise gl.vm.UserError("Unknown trade")
         trade = json.loads(self.trades[trade_id])
         return {
             "trade": trade,
