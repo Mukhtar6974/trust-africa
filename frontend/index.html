@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="genlayer-contract-address" content="">
+    <meta name="genlayer-network" content="studionet">
     <title>Trust Africa</title>
     <style>
         :root { --ink:#0b1630; --navy:#0a1f44; --blue:#165dff; --teal:#0f9f8f; --green:#14804a; --amber:#b76e00; --red:#c8323f; --muted:#66758f; --line:#dce4ef; --soft:#f4f7fb; --white:#fff; }
@@ -286,8 +288,9 @@
                     <div class="form-grid">
                         <div class="field"><label for="buyerName">Buyer Business</label><input id="buyerName" name="buyer" type="text" placeholder="Accra Retail Partners" required></div>
                         <div class="field"><label for="sellerName">Seller Business</label><input id="sellerName" name="seller" type="text" placeholder="Lagos Textile Export Ltd" required></div>
+                        <div class="field"><label for="sellerAddress">Seller GenLayer Wallet</label><input id="sellerAddress" name="seller_address" type="text" pattern="0x[a-fA-F0-9]{40}" placeholder="0x..." required></div>
                         <div class="field"><label for="productName">Product</label><input id="productName" name="product" type="text" placeholder="Premium textile consignment" required></div>
-                        <div class="field"><label for="tradeAmount">Trade Value</label><input id="tradeAmount" name="amount" type="number" min="0.01" step="0.01" placeholder="25000" required></div>
+                        <div class="field"><label for="tradeAmount">Trade Value (accounting units)</label><input id="tradeAmount" name="amount" type="number" min="1" step="1" placeholder="25000" required></div>
                         <div class="field field-full"><label for="tradeEvidence">Evidence</label><textarea id="tradeEvidence" name="evidence" placeholder="Invoice, receipt, tracking, or delivery proof" required></textarea></div>
                     </div>
                     <button type="submit">Run AI Trust Decision</button>
@@ -336,6 +339,7 @@
                 <p class="card-kicker">Compare a buyer claim with the seller response.</p>
                 <span class="sr-only" id="dispute">Loading resolution policy...</span>
                 <form id="disputeForm" onsubmit="submitDispute(event)">
+                    <div class="field"><label for="disputeTradeId">Trade ID</label><input id="disputeTradeId" name="trade_id" type="text" required></div>
                     <div class="field"><label for="buyerClaim">Buyer Claim</label><textarea id="buyerClaim" name="buyer_claim" required></textarea></div>
                     <div class="field"><label for="sellerResponse">Seller Response</label><textarea id="sellerResponse" name="seller_response" required></textarea></div>
                     <div class="field"><label for="disputeEvidence">Evidence</label><textarea id="disputeEvidence" name="evidence" required></textarea></div>
@@ -498,7 +502,53 @@
 })();
 </script>
 
-<script>
+<script type="module">
+import { createClient } from "https://esm.sh/genlayer-js@1.1.8";
+import { localnet, studionet, testnetAsimov, testnetBradbury } from "https://esm.sh/genlayer-js@1.1.8/chains";
+import { TransactionStatus } from "https://esm.sh/genlayer-js@1.1.8/types";
+
+const APP_CONFIG = {
+    contractAddress: document.querySelector('meta[name="genlayer-contract-address"]')?.content || "",
+    network: document.querySelector('meta[name="genlayer-network"]')?.content || "studionet"
+};
+const CHAINS = { localnet, studionet, testnetAsimov, testnetBradbury };
+let genlayerClient;
+let connectedAccount;
+
+async function connectGenLayer() {
+    if (!APP_CONFIG.contractAddress || !/^0x[a-fA-F0-9]{40}$/.test(APP_CONFIG.contractAddress)) {
+        throw new Error("Set the deployed GenLayer contract address in the genlayer-contract-address meta tag");
+    }
+    if (!window.ethereum) throw new Error("A GenLayer-compatible browser wallet is required");
+    const [address] = await window.ethereum.request({ method: "eth_requestAccounts" });
+    connectedAccount = address;
+    genlayerClient = createClient({ chain: CHAINS[APP_CONFIG.network], account: address });
+    await genlayerClient.connect(APP_CONFIG.network);
+    return genlayerClient;
+}
+
+async function writeAndFinalize(functionName, args) {
+    const client = await connectGenLayer();
+    const hash = await client.writeContract({
+        address: APP_CONFIG.contractAddress,
+        functionName,
+        args,
+        value: 0n
+    });
+    await client.waitForTransactionReceipt({ hash, status: TransactionStatus.FINALIZED });
+    return hash;
+}
+
+async function readContract(functionName, args = []) {
+    const client = genlayerClient || createClient({ chain: CHAINS[APP_CONFIG.network] });
+    return client.readContract({
+        address: APP_CONFIG.contractAddress,
+        functionName,
+        args,
+        stateStatus: "finalized"
+    });
+}
+
 let riskMetrics = null;
 let escrowMetrics = {
     locked: 0,
@@ -713,7 +763,7 @@ function updateRiskDashboard(riskLevel) {
     renderRiskDashboard();
 }
 
-function submitTrade(event) {
+async function submitTrade(event) {
     event.preventDefault();
 
     const form = event.currentTarget;
@@ -725,68 +775,66 @@ function submitTrade(event) {
     submitButton.disabled = true;
     document.getElementById("newTrade").innerText = "Running AI Trade Judge...";
 
-    fetch("http://127.0.0.1:5000/ai-judge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            trade_id: tradeId,
-            buyer: trade.buyer,
-            seller: trade.seller,
-            product: trade.product,
-            amount: trade.amount,
-            evidence: trade.evidence
-        })
-    })
-    .then(res => {
-        if (!res.ok) throw new Error("AI trade adjudication failed");
-        return res.json();
-    })
-    .then(data => {
+    try {
+        await connectGenLayer();
+        await writeAndFinalize("create_trade", [
+            tradeId,
+            trade.buyer,
+            connectedAccount,
+            trade.seller,
+            trade.seller_address,
+            trade.product,
+            BigInt(trade.amount),
+            trade.evidence
+        ]);
+        await writeAndFinalize("validate_trade", [tradeId, trade.evidence]);
+        await writeAndFinalize("issue_trust_passport", [trade.buyer]);
+        await writeAndFinalize("issue_trust_passport", [trade.seller]);
+        const data = await readContract("get_full_trust_report", [tradeId]);
+        const judgment = data.trade;
         addTradeToHistory(
             tradeId,
             trade.buyer,
             trade.seller,
             trade.product,
             trade.amount,
-            data.decision
+            judgment.decision
         );
 
-        updateRiskDashboard(data.risk);
-        updateWorkflowMetrics(trade.amount, data);
-        updateTradeJudge(data);
+        updateRiskDashboard(judgment.risk);
+        updateWorkflowMetrics(trade.amount, judgment);
+        updateTradeJudge(judgment);
 
-        const fundsStatus = data.escrow_status || (data.decision === "APPROVED" ? "RELEASED" : data.decision === "REJECTED" ? "REFUNDED" : "HELD");
+        const fundsStatus = judgment.decision === "APPROVED" ? "RELEASED" : judgment.decision === "REJECTED" ? "REFUNDED" : "HELD";
         document.getElementById("escrowFundsStatus").innerText = fundsStatus;
         document.getElementById("escrowReleaseCondition").innerText = "GenLayer trust consensus";
-        document.getElementById("escrowDecision").innerText = data.escrow_decision;
+        document.getElementById("escrowDecision").innerText = judgment.escrow_decision;
         renderEscrowTotals(data.escrow);
 
         document.getElementById("newTrade").innerText =
-            "Created " + tradeId + " | Decision: " + data.decision;
+            "Created " + tradeId + " | Decision: " + judgment.decision;
 
         document.getElementById("trustCertificate").innerText =
-            data.certificate_status;
+            judgment.certificate_status;
 
         document.getElementById("trustAnalysis").innerText =
             "Trade: " + tradeId +
-            " | Decision: " + data.decision +
-            " | Risk: " + data.risk +
-            " | Confidence: " + data.confidence +
-            " | Reason: " + data.reason;
+            " | Decision: " + judgment.decision +
+            " | Risk: " + judgment.risk +
+            " | Confidence: " + judgment.confidence +
+            " | Reason: " + judgment.reason;
 
         renderPassportCards([data.buyer_passport, data.seller_passport]);
 
         form.reset();
-    })
-    .catch(error => {
+    } catch (error) {
         document.getElementById("newTrade").innerText = error.message;
-    })
-    .finally(() => {
+    } finally {
         submitButton.disabled = false;
-    });
+    }
 }
 
-function submitDispute(event) {
+async function submitDispute(event) {
     event.preventDefault();
 
     const form = event.currentTarget;
@@ -798,47 +846,40 @@ function submitDispute(event) {
     submitButton.disabled = true;
     resultElement.innerText = "Analyzing claims and seller evidence...";
 
-    fetch("http://127.0.0.1:5000/resolve-dispute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            buyer_claim: dispute.buyer_claim,
-            seller_response: dispute.seller_response,
-            evidence: dispute.evidence
-        })
-    })
-    .then(res => {
-        if (!res.ok) throw new Error("Dispute resolution failed");
-        return res.json();
-    })
-    .then(data => {
+    try {
+        await writeAndFinalize("resolve_dispute", [
+            dispute.trade_id,
+            dispute.buyer_claim,
+            dispute.seller_response,
+            dispute.evidence
+        ]);
+        const data = await readContract("get_full_trust_report", [dispute.trade_id]);
+        const trade = data.trade;
         resultElement.innerText =
-            "Decision: " + data.decision +
-            " | Risk: " + data.risk_level +
-            " | Confidence: " + data.confidence +
-            " | Reason: " + data.reason;
+            "Decision: " + trade.dispute_decision +
+            " | Reason: " + trade.dispute_reason;
 
         document.getElementById("escrowStatus").innerText =
-            "AI Dispute Decision: " + data.decision +
-            " | Risk: " + data.risk_level +
-            " | Reason: " + data.reason;
+            "AI Dispute Decision: " + trade.dispute_decision +
+            " | Reason: " + trade.dispute_reason;
 
         document.getElementById("escrowFundsStatus").innerText =
-            data.decision === "RELEASE_FUNDS" ? "RELEASED" : data.decision === "REFUND_BUYER" ? "REFUNDED" : "LOCKED";
-        document.getElementById("escrowDecision").innerText = data.decision;
-        addTrustEvent("Dispute Resolved", data.reason, data.decision);
+            trade.dispute_decision === "RELEASE_FUNDS" ? "RELEASED" : trade.dispute_decision === "REFUND_BUYER" ? "REFUNDED" : "LOCKED";
+        document.getElementById("escrowDecision").innerText = trade.dispute_decision;
+        addTrustEvent("Dispute Resolved", trade.dispute_reason, trade.dispute_decision);
         renderPassportCards([data.buyer_passport, data.seller_passport]);
         renderEscrowTotals(data.escrow);
 
         form.reset();
-    })
-    .catch(error => {
+    } catch (error) {
         resultElement.innerText = error.message;
-    })
-    .finally(() => {
+    } finally {
         submitButton.disabled = false;
-    });
+    }
 }
+
+window.submitTrade = submitTrade;
+window.submitDispute = submitDispute;
 
 function renderPassportCards(passports) {
     const container = document.getElementById("reputation");

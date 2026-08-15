@@ -4,6 +4,8 @@ The engine mirrors the state transitions implemented by the GenLayer
 intelligent contract while keeping the local demo fast and dependency-free.
 """
 
+"""Historical deterministic demo engine; never an authoritative production path."""
+
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from threading import RLock

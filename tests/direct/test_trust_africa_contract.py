@@ -29,7 +29,9 @@ def test_valid_evidence_returns_allowed_decision(direct_vm, direct_deploy, direc
     contract.create_trade(
         "T-VALID-1",
         "Accra Retail Partners",
+        direct_alice,
         "Lagos Textile Export Ltd",
+        direct_alice,
         "Premium textiles",
         1000,
         "Delivery confirmed with official invoice and courier tracking number KE-4821",
@@ -54,7 +56,9 @@ def test_suspicious_evidence_returns_allowed_decision(direct_vm, direct_deploy, 
     contract.create_trade(
         "T-FRAUD-1",
         "Accra Retail Partners",
+        direct_alice,
         "Lagos Textile Export Ltd",
+        direct_alice,
         "Electronic goods",
         500,
         "This is a completely fabricated transaction; seller admitted to running a scam",
@@ -74,7 +78,9 @@ def test_ambiguous_evidence_returns_allowed_decision(direct_vm, direct_deploy, d
     contract.create_trade(
         "T-AMBIG-1",
         "Nairobi Agro Supply",
+        direct_alice,
         "Kigali Logistics Hub",
+        direct_alice,
         "Agricultural produce",
         750,
         "Seller says goods were sent last week",
@@ -94,7 +100,9 @@ def test_validate_trade_state_consistent_with_decision(direct_vm, direct_deploy,
     contract.create_trade(
         "T-STATE-1",
         "Accra Retail Partners",
+        direct_alice,
         "Lagos Textile Export Ltd",
+        direct_alice,
         "Textiles",
         800,
         "Signed delivery receipt from licensed courier, invoice ref ACC-2024-019",
@@ -128,7 +136,9 @@ def test_dispute_with_seller_proof_returns_allowed_decision(direct_vm, direct_de
     contract.create_trade(
         "T-DISP-PROOF",
         "Accra Retail Partners",
+        direct_alice,
         "Lagos Textile Export Ltd",
+        direct_alice,
         "Textiles",
         900,
         "Pending",
@@ -151,7 +161,9 @@ def test_dispute_without_seller_proof_returns_allowed_decision(direct_vm, direct
     contract.create_trade(
         "T-DISP-NOPROOF",
         "Accra Retail Partners",
+        direct_alice,
         "Lagos Textile Export Ltd",
+        direct_alice,
         "Textiles",
         600,
         "Pending",
@@ -173,7 +185,9 @@ def test_dispute_updates_passport_consistently(direct_vm, direct_deploy, direct_
     contract.create_trade(
         "T-DISP-PASS",
         "Accra Retail Partners",
+        direct_alice,
         "Lagos Textile Export Ltd",
+        direct_alice,
         "Electronics",
         1200,
         "Pending",
@@ -237,7 +251,9 @@ def test_full_trust_report_includes_consensus_info(direct_vm, direct_deploy, dir
     contract.create_trade(
         "T-REPORT-1",
         "Accra Retail Partners",
+        direct_alice,
         "Lagos Textile Export Ltd",
+        direct_alice,
         "Textiles",
         500,
         "Awaiting confirmation",
@@ -284,3 +300,83 @@ def test_update_reputation_non_owner_rejected(direct_vm, direct_deploy, direct_a
 
     with pytest.raises(Exception):
         contract.update_reputation("Lagos Textile Export Ltd", 50)
+
+
+# ---------------------------------------------------------------------------
+# authorization and finalization regressions
+# ---------------------------------------------------------------------------
+
+def _create_participant_trade(contract, sender, seller, trade_id="T-GUARD-1", amount=700):
+    contract.create_trade(
+        trade_id,
+        "Buyer Ltd",
+        sender,
+        "Seller Ltd",
+        seller,
+        "Goods",
+        amount,
+        "Evidence",
+    )
+
+
+def test_duplicate_validation_cannot_process_trade_twice(
+    direct_vm, direct_deploy, direct_alice, direct_bob
+):
+    contract = direct_deploy("contracts/trust_africa_intelligent_contract.py")
+    direct_vm.sender = direct_alice
+    _create_participant_trade(contract, direct_alice, direct_bob)
+    contract.validate_trade("T-GUARD-1", "Signed delivery evidence")
+    released = contract.get_full_trust_report("T-GUARD-1")["escrow"]["funds_released"]
+
+    with direct_vm.expect_revert("Trade already finalized"):
+        contract.validate_trade("T-GUARD-1", "Signed delivery evidence")
+
+    assert contract.get_full_trust_report("T-GUARD-1")["escrow"]["funds_released"] == released
+
+
+def test_repeated_manual_review_does_not_double_count_held_funds(
+    direct_vm, direct_deploy, direct_alice, direct_bob
+):
+    direct_vm.clear_mocks()
+    direct_vm.mock_llm(
+        "dispute resolution expert",
+        '{"decision":"MANUAL_REVIEW","reason":"Evidence remains inconclusive"}',
+    )
+    contract = direct_deploy("contracts/trust_africa_intelligent_contract.py")
+    direct_vm.sender = direct_alice
+    _create_participant_trade(contract, direct_alice, direct_bob)
+
+    contract.resolve_dispute("T-GUARD-1", "Claim", "Response", "Evidence")
+    first_held = contract.get_full_trust_report("T-GUARD-1")["escrow"]["funds_held"]
+    contract.resolve_dispute("T-GUARD-1", "Claim updated", "Response", "Evidence")
+
+    assert first_held == "700"
+    assert contract.get_full_trust_report("T-GUARD-1")["escrow"]["funds_held"] == first_held
+
+
+def test_unauthorized_account_cannot_settle_another_users_trade(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/trust_africa_intelligent_contract.py")
+    direct_vm.sender = direct_alice
+    _create_participant_trade(contract, direct_alice, direct_bob)
+    direct_vm.sender = direct_charlie
+
+    with direct_vm.expect_revert("Only the trade buyer or seller can resolve this dispute"):
+        contract.resolve_dispute("T-GUARD-1", "Claim", "Response", "Evidence")
+
+
+def test_final_settlement_blocks_every_later_processing_path(
+    direct_vm, direct_deploy, direct_alice, direct_bob
+):
+    contract = direct_deploy("contracts/trust_africa_intelligent_contract.py")
+    direct_vm.sender = direct_alice
+    _create_participant_trade(contract, direct_alice, direct_bob)
+    contract.resolve_dispute("T-GUARD-1", "Claim", "Response", "Delivery proof")
+    trade = contract.get_trade("T-GUARD-1")
+    assert trade["finalized"] is True
+
+    with direct_vm.expect_revert("Trade already finalized"):
+        contract.resolve_dispute("T-GUARD-1", "Claim", "Response", "More evidence")
+    with direct_vm.expect_revert("Trade already finalized"):
+        contract.validate_trade("T-GUARD-1", "Late validation")

@@ -1,24 +1,33 @@
-from backend.server import app
+from backend.server import app, gateway
 
 
-def test_trade_create_get_returns_unique_real_trade_records():
-    client = app.test_client()
+def test_backend_reads_trade_from_genlayer_gateway(monkeypatch):
+    calls = []
 
-    first = client.get("/trade/create").get_json()
-    second = client.get("/trade/create").get_json()
+    def fake_read(method, *args):
+        calls.append((method, args))
+        return {"trade_id": args[0], "source": "contract"}
 
-    assert first["trade_id"] != "TRADE003"
-    assert second["trade_id"] != "TRADE003"
-    assert first["trade_id"] != second["trade_id"]
-    assert first["decision"] in {"APPROVED", "REJECTED", "REVIEW_REQUIRED"}
-    assert "escrow" in first
+    monkeypatch.setattr(gateway, "read", fake_read)
+    response = app.test_client().get("/trade/T-100")
+
+    assert response.status_code == 200
+    assert response.get_json() == {"trade_id": "T-100", "source": "contract"}
+    assert calls == [("get_trade", ("T-100",))]
 
 
-def test_escrow_status_route_matches_frontend_contract():
-    client = app.test_client()
-    data = client.get("/escrow-status").get_json()
+def test_backend_reads_full_report_from_contract(monkeypatch):
+    monkeypatch.setattr(
+        gateway,
+        "read",
+        lambda method, trade_id: {"method": method, "trade": {"trade_id": trade_id}},
+    )
+    data = app.test_client().get("/full-trust-report/T-200").get_json()
+    assert data["method"] == "get_full_trust_report"
+    assert data["trade"]["trade_id"] == "T-200"
 
-    assert data["escrow_status"] in {"RELEASED", "REFUNDED", "HELD"}
-    assert data["ai_decision"] in {"RELEASE_FUNDS", "REFUND_BUYER", "HOLD_ESCROW"}
-    assert "condition" in data
-    assert "funds_released" in data
+
+def test_backend_rejects_unsigned_state_changes():
+    response = app.test_client().post("/ai-judge", json={"trade_id": "T-1"})
+    assert response.status_code == 409
+    assert "wallet-signed" in response.get_json()["error"]
