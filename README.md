@@ -188,7 +188,7 @@ Trust Africa uses GenLayer intelligent contracts because trade evidence evaluati
 - Has real financial consequences (escrow release, refund, or hold)
 - Must be auditable and on-chain for dispute appeals
 
-Escrow can autonomously release funds, refund the buyer, or hold settlement for review — but only after independent AI validators agree. Business Trust Passports update over time as verified trades, successful deliveries, disputes, and fraud signals build a portable reputation history.
+Escrow decisions autonomously update on-chain settlement accounting as RELEASE_FUNDS, REFUND_BUYER, or HOLD_ESCROW, but only after independent AI validators agree. The current contract records these settlement outcomes and aggregate escrow state; direct token/USDC transfers are future work. Business Trust Passports update over time as verified trades, successful deliveries, disputes, and fraud signals build a portable reputation history.
 
 ## Demo Workflow
 
@@ -257,9 +257,9 @@ A dashboard screenshot is included at [Screenshot 2026-06-19 183231.png](Screens
 
 ## Future Roadmap
 
-- Real GenLayer deployment
+- Public GenLayer network deployment beyond Studio validation
 - Wallet connection
-- USDC escrow
+- USDC token escrow transfers
 - Business verification
 - Document upload
 - Courier and tracking API verification
