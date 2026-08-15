@@ -54,15 +54,16 @@ Example seeded passports:
 
 ### Dynamic Reputation Rules
 
-| Event | Score change |
+| Contract event | Trust score effect |
 |---|---:|
-| Successful trade | +2 |
-| Approved evidence | +3 |
-| Dispute won | +2 |
-| Fraud detected | -10 |
-| Rejected evidence | -5 |
+| Trade approved | Buyer +2; Seller +5 |
+| Trade rejected | Seller -15 |
+| Dispute won | Winning party +2 |
+| Owner reputation adjustment | Owner-specified score_delta |
 
-Scores are bounded from 0 to 100 and update automatically after trade and dispute outcomes.
+Scores are bounded from 0 to 100. Completed trades, successful deliveries,
+disputes won, and disputes lost are also updated according to the corresponding
+contract outcome.
 
 ## AI Trade Judge
 
