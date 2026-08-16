@@ -11,7 +11,8 @@ Trust Africa separates product convenience from authoritative settlement.
 
 The historical Flask `TrustEngine` is demo/test code only and is not imported by
 the production browser or server. The UI reads finalized state directly from the
-deployed contract; the optional API calls the same contract through the CLI.
+deployed contract; the optional API calls the same finalized contract state
+through `genlayer-py`.
 
 ## Intelligent Decision Flow
 

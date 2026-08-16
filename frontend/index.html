@@ -505,14 +505,16 @@
 <script type="module">
 import { createClient } from "https://esm.sh/genlayer-js@1.1.8";
 import { localnet, studionet, testnetAsimov, testnetBradbury } from "https://esm.sh/genlayer-js@1.1.8/chains";
-import { TransactionStatus } from "https://esm.sh/genlayer-js@1.1.8/types";
+import { ExecutionResult, TransactionStatus } from "https://esm.sh/genlayer-js@1.1.8/types";
+import { createGenLayerClients, writeAndFinalizeTransaction } from "./genlayer-workflow.js";
 
 const APP_CONFIG = {
     contractAddress: document.querySelector('meta[name="genlayer-contract-address"]')?.content || "",
     network: document.querySelector('meta[name="genlayer-network"]')?.content || "studionet"
 };
 const CHAINS = { localnet, studionet, testnetAsimov, testnetBradbury };
-let genlayerClient;
+let readClient = createClient({ chain: CHAINS[APP_CONFIG.network] });
+let writeClient;
 let connectedAccount;
 
 async function connectGenLayer() {
@@ -522,26 +524,30 @@ async function connectGenLayer() {
     if (!window.ethereum) throw new Error("A GenLayer-compatible browser wallet is required");
     const [address] = await window.ethereum.request({ method: "eth_requestAccounts" });
     connectedAccount = address;
-    genlayerClient = createClient({ chain: CHAINS[APP_CONFIG.network], account: address });
-    await genlayerClient.connect(APP_CONFIG.network);
-    return genlayerClient;
+    const clients = createGenLayerClients(
+        createClient,
+        CHAINS[APP_CONFIG.network],
+        address,
+        window.ethereum
+    );
+    readClient = clients.readClient;
+    writeClient = clients.writeClient;
+    await writeClient.connect(APP_CONFIG.network);
+    return writeClient;
 }
 
 async function writeAndFinalize(functionName, args) {
     const client = await connectGenLayer();
-    const hash = await client.writeContract({
+    return writeAndFinalizeTransaction(client, readClient, {
         address: APP_CONFIG.contractAddress,
         functionName,
         args,
         value: 0n
-    });
-    await client.waitForTransactionReceipt({ hash, status: TransactionStatus.FINALIZED });
-    return hash;
+    }, TransactionStatus, ExecutionResult);
 }
 
 async function readContract(functionName, args = []) {
-    const client = genlayerClient || createClient({ chain: CHAINS[APP_CONFIG.network] });
-    return client.readContract({
+    return readClient.readContract({
         address: APP_CONFIG.contractAddress,
         functionName,
         args,

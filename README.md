@@ -11,7 +11,7 @@ trust passports, trust reports, and settlement accounting.
   methods; writes are signed by the connected browser wallet and finalized
   before the UI reads the resulting state.
 - `backend/server.py` is an optional read-only HTTP facade. It calls the deployed
-  contract through the GenLayer CLI and rejects every state-changing request.
+  contract through `genlayer-py` and rejects every state-changing request.
 - `backend/trust_engine.py` is retained only as a deterministic historical demo
   used by demo tests. It is not imported by the production server or browser.
 
@@ -64,7 +64,7 @@ TRUST_AFRICA_NETWORK=studionet
 TRUST_AFRICA_CORS_ORIGINS=https://your-frontend.example
 ```
 
-The backend requires the `genlayer` CLI on `PATH`. Start it with:
+The backend requires `genlayer-py`. Start it with:
 
 ```bash
 python backend/server.py

@@ -1,13 +1,6 @@
-"""Read-only gateway to the deployed Trust Africa intelligent contract.
+"""Read-only gateway to finalized Trust Africa intelligent-contract state."""
 
-State-changing calls intentionally do not live here: browser users submit those
-with their own GenLayer-compatible wallets. The Flask API only exposes finalized
-contract views through the official GenLayer CLI.
-"""
-
-import json
 import os
-import subprocess
 
 
 class GenLayerConfigurationError(RuntimeError):
@@ -18,35 +11,53 @@ class GenLayerReadError(RuntimeError):
     pass
 
 
+def _create_sdk_client(network, rpc_url):
+    try:
+        from genlayer_py import create_client
+        from genlayer_py import chains
+    except ImportError as error:
+        raise GenLayerConfigurationError(
+            "genlayer-py is required for backend contract reads"
+        ) from error
+
+    chain_name = network.replace("-", "_")
+    chain = getattr(chains, chain_name, None)
+    if chain is None:
+        raise GenLayerConfigurationError(f"Unsupported GenLayer network: {network}")
+    return create_client(chain=chain, endpoint=rpc_url or None)
+
+
 class GenLayerGateway:
-    def __init__(self, contract_address=None, rpc_url=None, runner=None):
+    def __init__(self, contract_address=None, rpc_url=None, network=None, client=None):
         self.contract_address = contract_address or os.getenv("TRUST_AFRICA_CONTRACT_ADDRESS", "")
-        self.rpc_url = rpc_url or os.getenv("TRUST_AFRICA_RPC_URL", "")
-        self._runner = runner or subprocess.run
+        self.rpc_url = rpc_url if rpc_url is not None else os.getenv("TRUST_AFRICA_RPC_URL", "")
+        self.network = network or os.getenv("TRUST_AFRICA_NETWORK", "studionet")
+        self._client = client
 
     def _require_configuration(self):
         if not self.contract_address:
             raise GenLayerConfigurationError("TRUST_AFRICA_CONTRACT_ADDRESS is required")
-        if not self.rpc_url:
-            raise GenLayerConfigurationError("TRUST_AFRICA_RPC_URL is required")
+
+    def _get_client(self):
+        if self._client is None:
+            self._client = _create_sdk_client(self.network, self.rpc_url)
+        return self._client
 
     def read(self, method, *args):
         self._require_configuration()
-        command = [
-            "genlayer", "call", self.contract_address, method,
-            "--rpc", self.rpc_url,
-        ]
-        if args:
-            command.extend(["--args", *(str(arg) for arg in args)])
-        completed = self._runner(command, capture_output=True, text=True, check=False)
-        if completed.returncode:
-            message = completed.stderr.strip() or completed.stdout.strip()
-            raise GenLayerReadError(message or "GenLayer read failed")
-        output = completed.stdout.strip()
         try:
-            return json.loads(output)
-        except json.JSONDecodeError:
-            return output
+            from genlayer_py.types import TransactionHashVariant
+
+            return self._get_client().read_contract(
+                address=self.contract_address,
+                function_name=method,
+                args=list(args),
+                transaction_hash_variant=TransactionHashVariant.LATEST_FINAL,
+            )
+        except GenLayerConfigurationError:
+            raise
+        except Exception as error:
+            raise GenLayerReadError(str(error) or "GenLayer read failed") from error
 
 
 gateway = GenLayerGateway()

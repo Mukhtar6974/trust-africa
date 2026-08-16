@@ -7,7 +7,7 @@ The production backend is:
 
 ```
 backend/server.py        — read-only GenLayer contract API facade
-backend/genlayer_gateway.py — real deployed-contract reads via GenLayer CLI
+backend/genlayer_gateway.py — real finalized deployed-contract reads via genlayer-py
 ```
 
 `backend/trust_engine.py` is historical deterministic demo/test code only.
