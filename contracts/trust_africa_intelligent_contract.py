@@ -195,6 +195,14 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
             sort_keys=True,
         )
 
+    def _address_bytes(self, value: Address) -> bytes:
+        if isinstance(value, Address):
+            return value.as_bytes
+        return bytes(value)
+
+    def _address_text(self, value: Address) -> str:
+        return "0x" + self._address_bytes(value).hex()
+
     # =========================================================================
     # Public write methods
     # =========================================================================
@@ -204,7 +212,9 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
         self,
         trade_id: str,
         buyer: str,
+        buyer_address: Address,
         seller: str,
+        seller_address: Address,
         product: str,
         amount: u256,
         evidence: str,
@@ -227,13 +237,23 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
                 "Trade fields and amount are required"
             )
 
+        if gl.message.sender_address.as_bytes not in {
+            self._address_bytes(buyer_address),
+            self._address_bytes(seller_address),
+        }:
+            raise gl.vm.UserError(
+                "Only the buyer or seller can create this trade"
+            )
+
         self._ensure_passport(buyer)
         self._ensure_passport(seller)
 
         trade = {
             "trade_id": trade_id,
             "buyer": buyer,
+            "buyer_address": self._address_text(buyer_address),
             "seller": seller,
+            "seller_address": self._address_text(seller_address),
             "product": product,
             "amount": str(amount),
             "evidence": evidence,
@@ -246,6 +266,7 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
             "validation_completed": False,
             "dispute_resolved": False,
             "funds_accounted": False,
+            "finalized": False,
         }
 
         self.trades[trade_id] = json.dumps(
@@ -289,6 +310,19 @@ class TrustAfricaIntelligentCommerce(gl.Contract):
         trade = json.loads(
             self.trades[trade_id]
         )
+
+        if self._address_text(gl.message.sender_address) not in {
+            trade["buyer_address"],
+            trade["seller_address"],
+        }:
+            raise gl.vm.UserError(
+                "Only the trade buyer or seller can validate this trade"
+            )
+
+        if trade.get("finalized", False):
+            raise gl.vm.UserError(
+                "Trade already finalized"
+            )
 
         if trade.get(
             "validation_completed",
@@ -512,6 +546,10 @@ Respond with JSON only:
 
         trade["funds_accounted"] = True
         trade["validation_completed"] = True
+        trade["finalized"] = verdict["decision"] in {
+            "APPROVED",
+            "REJECTED",
+        }
 
         self.trades[trade_id] = json.dumps(
             trade,
@@ -546,6 +584,19 @@ Respond with JSON only:
         trade = json.loads(
             self.trades[trade_id]
         )
+
+        if self._address_text(gl.message.sender_address) not in {
+            trade["buyer_address"],
+            trade["seller_address"],
+        }:
+            raise gl.vm.UserError(
+                "Only the trade buyer or seller can resolve this dispute"
+            )
+
+        if trade.get("finalized", False):
+            raise gl.vm.UserError(
+                "Trade already finalized"
+            )
 
         if trade.get(
             "dispute_resolved",
@@ -723,6 +774,7 @@ Respond with JSON only:
 
             trade["funds_accounted"] = True
             trade["dispute_resolved"] = True
+            trade["finalized"] = True
 
         elif decision == "RELEASE_FUNDS":
             if was_held:
@@ -754,6 +806,7 @@ Respond with JSON only:
 
             trade["funds_accounted"] = True
             trade["dispute_resolved"] = True
+            trade["finalized"] = True
 
         else:
             if not funds_accounted:

@@ -6,8 +6,10 @@ They are **not part of the production backend** and are not imported by `backend
 The production backend is:
 
 ```
-backend/server.py        — Flask API server
-backend/trust_engine.py  — in-memory TrustEngine (local preview only)
+backend/server.py        — read-only GenLayer contract API facade
+backend/genlayer_gateway.py — real finalized deployed-contract reads via genlayer-py
 ```
+
+`backend/trust_engine.py` is historical deterministic demo/test code only.
 
 These files are kept for project history only.

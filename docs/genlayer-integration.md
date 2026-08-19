@@ -4,11 +4,15 @@
 
 Trust Africa separates product convenience from authoritative settlement.
 
-- **Frontend and Flask own:** user experience, API previews, route indexing, cached analytics, and local demo state.
+- **Frontend owns:** user experience and wallet-signed GenLayer writes.
+- **Flask owns:** an optional read-only facade over deployed-contract views.
 - **GenLayer owns:** trade creation, evidence verdicts, trust-passport state, reputation deltas, dispute outcomes, and escrow release/refund/hold transitions.
 - **Businesses and logistics providers own:** invoices, receipts, tracking records, delivery proof, and claim evidence submitted for evaluation.
 
-The Flask `TrustEngine` mirrors contract transitions for a fast local demo. It is not the final source of truth. In a deployed system, accepted GenLayer state is indexed back into the API and UI.
+The historical Flask `TrustEngine` is demo/test code only and is not imported by
+the production browser or server. The UI reads finalized state directly from the
+deployed contract; the optional API calls the same finalized contract state
+through `genlayer-py`.
 
 ## Intelligent Decision Flow
 
@@ -104,5 +108,5 @@ The equivalence principle: `decision` must be exactly the same across validators
 2. Run direct state-transition tests.
 3. Run full integration tests against a GenLayer environment to verify validator agreement.
 4. Deploy the contract with the pinned runner.
-5. Configure the backend indexer with the deployed address.
-6. Treat accepted/finalized contract events as the authoritative API state.
+5. Configure the browser meta tags and backend environment with the deployed address/network.
+6. Use finalized contract reads as the authoritative application state.
